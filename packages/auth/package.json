@@ -1,0 +1,26 @@
+{
+   "name": "auth",
+   "version": "0.0.1",
+   "author": "SBH - $tacked Bounty Hunters",
+   "description": "A TypeScript package for the M.A.T.E engine",
+   "license": "",
+   "main": "dist/index.js",
+   "types": "dist/index.d.ts",
+   "scripts": {
+      "build": "tsc -p tsconfig.build.json",
+      "test": "jest --verbose"
+   },
+   "devDependencies": {
+      "@types/node": "^20.5.9",
+      "dotenv": "^16.3.1",
+      "ts-node": "^10.9.1",
+      "typescript": "^5.2.2"
+   },
+   "dependencies": {
+      "@safe-global/auth-kit": "^1.2.1",
+      "@web3auth/base": "4.6.0",
+      "@web3auth/modal": "4.6.2",
+      "@web3auth/openlogin-adapter": "4.6.0",
+      "ethers": "5.7.2"
+   }
+}
