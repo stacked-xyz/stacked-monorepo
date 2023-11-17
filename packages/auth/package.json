@@ -1,5 +1,5 @@
 {
-   "name": "auth",
+   "name": "@stacked-xyz/auth",
    "version": "0.0.1",
    "author": "SBH - $tacked Bounty Hunters",
    "description": "A TypeScript package for the M.A.T.E engine",

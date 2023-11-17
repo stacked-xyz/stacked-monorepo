@@ -1,5 +1,5 @@
 {
-   "name": "contracts",
+   "name": "@stacked-xyz/contracts",
    "version": "0.0.1",
    "author": "SBH - $tacked Bounty Hunters",
    "description": "Contracts for the stacked app",
