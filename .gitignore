@@ -1,0 +1,21 @@
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# misc
+.DS_Store
+*.pem
+dist
+coverage
+
+# local env files
+config.yaml
+.env
+
+# cache
+.turbo
+
+# Typescript
+*.tsbuildinfo
+*.d.ts
