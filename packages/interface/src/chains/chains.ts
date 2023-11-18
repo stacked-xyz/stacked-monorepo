@@ -34,4 +34,4 @@ export const mainnetChain: Chain = {
 };
 
 export const chains: Chain[] = [gnosisChain, goerliChain, mainnetChain];
-export const initialChain = gnosisChain;
+export const initialChain = mainnetChain;
