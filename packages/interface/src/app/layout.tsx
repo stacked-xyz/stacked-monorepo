@@ -1,12 +1,6 @@
 import "@/app/globals.css";
-import { Inter as FontSans } from "next/font/google";
-
+import { GeistSans } from "geist/font/sans";
 import { cn } from "@/lib/utils";
-
-export const fontSans = FontSans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
 
 interface RootLayoutProps {
   children: React.ReactNode;
@@ -20,7 +14,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <body
           className={cn(
             "min-h-screen bg-background font-sans antialiased",
-            fontSans.variable
+            GeistSans.variable
           )}
         >
           <div className="relative flex min-h-screen flex-col">
