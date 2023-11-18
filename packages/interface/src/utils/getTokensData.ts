@@ -16,7 +16,7 @@ const { ownerAddress } = useAccountAbstraction();
 const { composition } = useComposition();
 const assets = composition?.assets
 
-export async function getBalances(): Promise<tokenData[]> {
+export async function getTokensData(): Promise<tokenData[]> {
     if (assets && assets.length > 0) {
         return Promise.all(
             assets.map(async (address) => {
