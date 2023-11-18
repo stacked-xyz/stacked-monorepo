@@ -9,9 +9,11 @@ import { BalanceList } from "@/components/ui/balance-list";
 import NoAllocation from "@/components/no-allocation";
 import { useAccountAbstraction } from "@/store/accountAbstractionContext";
 import { MainNav } from "@/components/ui/main-nav";
+import { useComposition } from "@/store/allocationsContext";
 
 export default function Home() {
    const { isAuthenticated } = useAccountAbstraction();
+   const { composition } = useComposition();
    const router = useRouter();
 
    if (!isAuthenticated) {
