@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { useTokens, Token, UnknownToken } from "@/hooks/useTokens";
 import { useOrderHistory, Order } from "@/hooks/useOrderHistory";
+import { useAccountAbstraction } from "@/store/accountAbstractionContext";
 
 const formatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 const formatDate = (date: Date) => {
@@ -21,11 +22,11 @@ const formatDate = (date: Date) => {
 
 export function OrderHistory() {
     // Load these from state
-    const wallet = "0x9EB8c96CDfF9712c0f428E26B1E9bad2d07e3091";
-    const chainID = 100;
+    const { ownerAddress, chainId } = useAccountAbstraction();
+    // const wallet = "0x9EB8c96CDfF9712c0f428E26B1E9bad2d07e3091";
 
-    const { tokensMap } = useTokens(chainID);
-    const { orders, loaded } = useOrderHistory(wallet, chainID);
+    const { tokensMap } = useTokens(parseInt(chainId));
+    const { orders, loaded } = useOrderHistory(ownerAddress!, parseInt(chainId));
 
     const parsedOrders = orders.map((order) => {
         const fromToken:Token = tokensMap.get(order.sellToken.toLowerCase()) || UnknownToken;
