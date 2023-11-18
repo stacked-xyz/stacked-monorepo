@@ -1,8 +1,10 @@
-export function BalanceList({
-  balances,
-}: {
-  balances: { asset: string; symbol: string; balance: number }[];
-}) {
+
+
+
+export function BalanceList{
+  const balances = getBalances(ownerAddress, assets);
+
+
   return (
     <div className="space-y-8">
       {balances.map(({ symbol, asset, balance }) => (
