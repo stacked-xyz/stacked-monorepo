@@ -118,9 +118,9 @@ export default function Home() {
               </CardContent>
             </Card>
           </div>
-          {/* <Card>
-              <OrderHistory wallet="" chainId={1}/>
-            </Card> */}
+          <Card>
+            <OrderHistory />
+          </Card>
         </div>
       </div>
     </>

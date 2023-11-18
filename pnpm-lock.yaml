@@ -75,6 +75,9 @@ importers:
 
   packages/interface:
     dependencies:
+      '@cowprotocol/cow-sdk':
+        specifier: ^4.0.3
+        version: 4.0.3(ethers@5.7.2)
       '@ensdomains/thorin':
         specifier: ^0.6.44
         version: 0.6.44(react-dom@18.2.0)(react-transition-state@1.1.5)(react@18.2.0)(styled-components@5.3.11)
