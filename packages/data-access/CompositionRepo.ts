@@ -4,9 +4,9 @@ import "dotenv/config";
 import fs from "fs";
 
 export class CompositionRepo {
-   private isInitialised: boolean;
-   private fleekSecret: string;
-   private fleekKey: string;
+   private isInitialised: boolean = false;
+   private fleekSecret: string = "";
+   private fleekKey: string = "";
    private cowSupportedTokens: [
       {
          symbol: string;
@@ -20,6 +20,13 @@ export class CompositionRepo {
 
    public init() {
       if (!this.isInitialised) {
+         if (
+            !process.env.REACT_APP_FLEEK_KEY ||
+            !process.env.REACT_APP_FLEEK_SECRET
+         ) {
+            throw new Error("Fleek key and secret must be provided");
+         }
+
          try {
             this.fleekKey = process.env.REACT_APP_FLEEK_KEY;
             this.fleekSecret = process.env.REACT_APP_FLEEK_SECRET;
