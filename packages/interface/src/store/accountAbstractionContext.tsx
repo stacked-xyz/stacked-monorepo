@@ -1,3 +1,4 @@
+"use client";
 import {
    createContext,
    useCallback,
@@ -64,7 +65,7 @@ const useAccountAbstraction = () => {
 const AccountAbstractionProvider = ({
    children,
 }: {
-   children: JSX.Element;
+   children: React.ReactNode;
 }) => {
    // owner address from the email  (provided by web3Auth)
    const [ownerAddress, setOwnerAddress] = useState<string>("");
@@ -99,7 +100,9 @@ const AccountAbstractionProvider = ({
    useEffect(() => {
       (async () => {
          const options: Web3AuthOptions = {
-            clientId: process.env.REACT_APP_WEB3AUTH_CLIENT_ID || "",
+            clientId:
+               process.env.REACT_APP_WEB3AUTH_CLIENT_ID ||
+               "BNgmLOYGOV5Zw0VsoCKlZ6i1ylOqMuCBvkxlTAISsyBX6-9YvHhFmu228dSeigr0XZEx9xFVNwf0AsR7B_ed4LI",
             web3AuthNetwork: "testnet",
             chainConfig: {
                chainNamespace: CHAIN_NAMESPACES.EIP155,
@@ -264,16 +267,11 @@ const AccountAbstractionProvider = ({
       chainId,
       chain,
       safes,
-
       isAuthenticated,
-
       web3Provider,
-
       loginWeb3Auth,
       logoutWeb3Auth,
-
       setChainId,
-
       safeSelected,
       safeBalance,
       setSafeSelected,

@@ -1,40 +1,37 @@
-import Link from "next/link";
-
 import { cn } from "@/lib/utils";
+import { Button } from "./button";
+import { useAccountAbstraction } from "@/store/accountAbstractionContext";
 
 export function MainNav({
-  className,
-  ...props
+   className,
+   ...props
 }: React.HTMLAttributes<HTMLElement>) {
-  return (
-    <nav
-      className={cn("flex items-center space-x-4 lg:space-x-6", className)}
-      {...props}
-    >
-      <Link
-        href="/examples/dashboard"
-        className="text-sm font-medium transition-colors hover:text-primary"
+   const { isAuthenticated, ownerAddress } = useAccountAbstraction();
+
+   console.log("ownerAddress", ownerAddress);
+
+   return (
+      <nav
+         className={cn("flex items-center space-x-4 lg:space-x-6", className)}
+         {...props}
       >
-        Overview
-      </Link>
-      <Link
-        href="/examples/dashboard"
-        className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-      >
-        Customers
-      </Link>
-      <Link
-        href="/examples/dashboard"
-        className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-      >
-        Products
-      </Link>
-      <Link
-        href="/examples/dashboard"
-        className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-      >
-        Settings
-      </Link>
-    </nav>
-  );
+         <div className="">
+            <Button variant="outline" type="button">
+               {isAuthenticated
+                  ? shortenAddress(ownerAddress || "")
+                  : "Connect Wallet"}
+            </Button>
+         </div>
+      </nav>
+   );
+}
+
+function shortenAddress(address: string) {
+   if (!address) {
+      return "";
+   }
+   const start = address.substring(0, 6);
+   const end = address.substring(address.length - 4);
+
+   return `${start}...${end}`;
 }
