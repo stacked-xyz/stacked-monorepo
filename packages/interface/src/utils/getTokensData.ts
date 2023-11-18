@@ -12,11 +12,14 @@ export type tokenData = {
  }
 
 const provider = new ethers.providers.JsonRpcProvider("https://rpc.ankr.com/eth");
-const { ownerAddress } = useAccountAbstraction();
-const { composition } = useComposition();
-const assets = composition?.assets
+// const { ownerAddress } = useAccountAbstraction();
+//const { composition } = useComposition();
+// const assets = composition?.assets
 
-export async function getTokensData(): Promise<tokenData[]> {
+export async function getTokensData(
+    ownerAddress: string,
+    assets: string[]
+): Promise<tokenData[]> {
     if (assets && assets.length > 0) {
         return Promise.all(
             assets.map(async (address) => {

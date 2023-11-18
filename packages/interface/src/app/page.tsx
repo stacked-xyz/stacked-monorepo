@@ -15,13 +15,13 @@ import { useAccountAbstraction } from "@/store/accountAbstractionContext";
 
 export default function Home() {
   const { isAuthenticated } = useAccountAbstraction();
-  const { composition } = useComposition();
+  // const { composition } = useComposition();
   const router = useRouter();
 
-  console.log({ composition });
+  // console.log({ composition });
 
   if (!isAuthenticated) {
-    router.push("/login");
+   router.push("/login");
   }
 
   const allocations = getAllocationObject();
@@ -69,12 +69,13 @@ export default function Home() {
                       $45,231.89 USD
                     </p>
                   </div>
-                  <BalanceList
+                  
+                  {/* <BalanceList
                     balances={[
                       { symbol: "BTC", asset: "Bitcoin", balance: 4567 },
                       { symbol: "ETH", asset: "Ethereum", balance: 2400 },
                     ]}
-                  />
+                  /> */}
                   <TopUp wallet="TODO" />
                   <AfterOnRamp />
                 </div>
@@ -92,9 +93,9 @@ export default function Home() {
               </CardContent>
             </Card>
           </div>
-            <Card>
+            {/* <Card>
               <OrderHistory wallet="" chainId={1}/>
-            </Card>
+            </Card> */}
         </div>
       </div>
     </>

@@ -2,7 +2,7 @@ import { getTokensData } from "../../utils/getTokensData";
 
 
 export function BalanceList() {
-  const balances = getTokensData();
+  // const balances = getTokensData();
   
 
   return (
