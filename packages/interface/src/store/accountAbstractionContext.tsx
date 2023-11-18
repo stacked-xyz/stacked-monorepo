@@ -14,12 +14,18 @@ import Safe, {
    EthersAdapter,
    SafeAccountConfig,
    predictSafeAddress,
+   SafeFactory,
 } from "@safe-global/protocol-kit";
+import SafeApiKit from "@safe-global/api-kit";
 
 import { Web3AuthModalPack } from "@safe-global/auth-kit";
 import usePolling from "../hooks/usePolling";
 import { initialChain } from "../chains/chains";
 import { getChain } from "../utils/getChain";
+
+const txServiceUrl = "https://safe-transaction-goerli.safe.global";
+const RPC_URL = "https://eth-goerli.public.blastapi.io";
+const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
 
 type accountAbstractionContextValue = {
    ownerAddress?: string;
@@ -221,10 +227,13 @@ const AccountAbstractionProvider = ({
                ethAdapter: ethAdapter,
                safeAccountConfig,
             });
+            console.log("predicted safeAddress: ", safeAddress);
 
             const isSafeDeployed = await ethAdapter.isContractDeployed(
                safeAddress
             );
+
+            console.log("isSafeDeployed: ", isSafeDeployed);
 
             let safeSdk;
 
@@ -234,13 +243,23 @@ const AccountAbstractionProvider = ({
                   safeAddress,
                });
             } else {
-               safeSdk = await Safe.create({
-                  ethAdapter: ethAdapter,
-                  predictedSafe: { safeAccountConfig },
-               });
+               safeSdk = await createSafe(signer, safeAccountConfig);
+               const message = await signer.signMessage("hello");
+               console.log("message: ", message);
+
+               if (!safeSdk) {
+                  console.log("safeSdk is undefined, creation failed");
+                  safeSdk = await Safe.create({
+                     ethAdapter: ethAdapter,
+                     predictedSafe: { safeAccountConfig },
+                  });
+               }
+
+               console.log("newSafe: ", safeSdk);
             }
 
             const hasSafes = safes.length > 0;
+            console.log("hasSafes: ", hasSafes);
 
             const safeSelected = hasSafes
                ? safes[0]
@@ -283,5 +302,41 @@ const AccountAbstractionProvider = ({
       </accountAbstractionContext.Provider>
    );
 };
+
+async function createSafe(
+   connectedSigner: ethers.providers.JsonRpcSigner,
+   safeConfig: SafeAccountConfig
+) {
+   let newSafe: Safe = {} as Safe;
+   console.log("connectedSigner: ", connectedSigner);
+   const ethAdapter = new EthersAdapter({
+      ethers,
+      signerOrProvider: connectedSigner,
+   });
+
+   // Need to send the transaction to relayer to create safe
+
+   // const safeService = new SafeApiKit({ txServiceUrl, ethAdapter: ethAdapter });
+   const safeFactory = await SafeFactory.create({
+      ethAdapter: ethAdapter,
+   });
+
+   console.log("Deploying safe for the first time");
+
+   try {
+      newSafe = await safeFactory.deploySafe({
+         safeAccountConfig: safeConfig,
+      });
+      const safeAddress = await newSafe.getAddress();
+      console.log(`https://goerli.etherscan.io/address/${safeAddress}`);
+      console.log(`https://app.safe.global/gor:${safeAddress}`);
+   } catch (error) {
+      console.log("An error occurred while deploying Safe");
+      console.log(error);
+      console.log((error as Error).message);
+   }
+
+   return newSafe;
+}
 
 export { useAccountAbstraction, AccountAbstractionProvider };
