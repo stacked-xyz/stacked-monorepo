@@ -2,7 +2,6 @@ import {
   OrderBookApi,
   OrderKind,
   Address,
-  SigningScheme,
   OrderQuoteSideKindSell,
   OrderCreation,
   OrderQuoteRequest,
@@ -395,41 +394,11 @@ export async function sendOrdersToCow(
   );
 }
 
-export async function buildSignatureTx(
-  settlementContractAddress: Address,
-  safeSdk: Safe,
-  orders: OrderWithId[]
-): Promise<SafeTransaction> {
-  const settlementContract = new Contract(
-    settlementContractAddress,
-    settlementContractAbi
-  );
-
-  return safeSdk.createTransaction({
-    safeTransactionData: await Promise.all(
-      orders.map(
-        async ({ id }) =>
-        ({
-          ...(await settlementContract.populateTransaction.setPreSignature!(
-            id,
-            true
-          )),
-          to: settlementContractAddress,
-          value: "0",
-          operation: OperationType.Call,
-        } as any)
-      )
-    ),
-  });
-}
-
 export async function sendOrders(
   provider: providers.Provider,
   signer: Signer,
   signerAddress: Address,
-  // safeSdk: Safe,
   orderBookApi: OrderBookApi,
-  // settlementContractAddress: Address,
   targetAllocation: TargetAllocation,
   baseAsset: Address
 ): Promise<any> {

@@ -1,4 +1,5 @@
 "use client";
+
 import {
   createContext,
   useCallback,
@@ -32,6 +33,7 @@ type accountAbstractionContextValue = {
   chainId: string;
   safes: string[];
   isAuthenticated: boolean;
+  ready: boolean;
   web3Provider?: ethers.providers.Web3Provider;
   loginWeb3Auth: () => void;
   logoutWeb3Auth: () => void;
@@ -43,12 +45,13 @@ type accountAbstractionContextValue = {
 
 const initialState = {
   isAuthenticated: false,
-  loginWeb3Auth: () => {},
-  logoutWeb3Auth: () => {},
-  relayTransaction: async () => {},
-  setChainId: () => {},
-  setSafeSelected: () => {},
-  onRampWithStripe: async () => {},
+  ready: false,
+  loginWeb3Auth: () => { },
+  logoutWeb3Auth: () => { },
+  relayTransaction: async () => { },
+  setChainId: () => { },
+  setSafeSelected: () => { },
+  onRampWithStripe: async () => { },
   safes: [],
   chainId: initialChain.id,
 };
@@ -83,6 +86,7 @@ const AccountAbstractionProvider = ({
   const [chainId, setChainId] = useState<string>(() => {
     return initialChain.id;
   });
+  const [ready, setReady] = useState<boolean>(false);
 
   // web3 provider to perform signatures
   const [web3Provider, setWeb3Provider] =
@@ -161,7 +165,9 @@ const AccountAbstractionProvider = ({
 
   // auth-kit implementation
   const loginWeb3Auth = useCallback(async () => {
-    if (!web3AuthModalPack) return;
+    if (!web3AuthModalPack) {
+      return;
+    }
 
     try {
       const { safes, eoa } = await web3AuthModalPack.signIn();
@@ -182,7 +188,10 @@ const AccountAbstractionProvider = ({
     if (web3AuthModalPack && web3AuthModalPack.getProvider()) {
       (async () => {
         await loginWeb3Auth();
+        setReady(true);
       })();
+    } else {
+      setReady(true);
     }
   }, [web3AuthModalPack, loginWeb3Auth]);
 
@@ -290,6 +299,7 @@ const AccountAbstractionProvider = ({
     safeSelected,
     safeBalance,
     setSafeSelected,
+    ready,
   };
 
   return (

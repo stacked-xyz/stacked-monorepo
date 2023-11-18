@@ -13,16 +13,18 @@ import { getAllocationObject } from "@/lib/utils";
 import { useComposition } from "@/store/allocationsContext";
 import { useAccountAbstraction } from "@/store/accountAbstractionContext";
 import { MainNav } from "@/components/ui/main-nav";
+import AuthenticationPage from "./login/page";
 
 export default function Home() {
-  const { isAuthenticated } = useAccountAbstraction();
+  const { isAuthenticated, ready } = useAccountAbstraction();
   // const { composition } = useComposition();
   const router = useRouter();
 
   // console.log({ composition });
+  if (!ready) return null;
 
   if (!isAuthenticated) {
-   router.push("/login");
+    return <AuthenticationPage />;
   }
 
   const allocations = getAllocationObject();
@@ -70,7 +72,7 @@ export default function Home() {
                       $45,231.89 USD
                     </p>
                   </div>
-                  
+
                   {/* <BalanceList
                     balances={[
                       { symbol: "BTC", asset: "Bitcoin", balance: 4567 },
@@ -94,7 +96,7 @@ export default function Home() {
               </CardContent>
             </Card>
           </div>
-            {/* <Card>
+          {/* <Card>
               <OrderHistory wallet="" chainId={1}/>
             </Card> */}
         </div>
