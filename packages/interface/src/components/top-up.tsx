@@ -10,9 +10,8 @@ export function TopUp({ wallet }: { wallet: string }) {
       <Link
         href="https://onramp-sandbox.gatefi.com/?merchantId=1a3d8f5d-5adb-4525-8eee-efdbcc220285&cryptoCurrency=eth&wallet=0x717654f0E07450e47A53e6A33eE191852C47CaF8&walletLock=1&redirectUrl=http://localhost:3000?isReturnUrl=true&backToButtonLabel=Return to Stake"
         //href={href}
-        className={cn(
-          buttonVariants({ variant: "default" })
-        )}>
+        className={cn("w-full", buttonVariants({ variant: "default" }))}
+      >
         Top up Wallet
       </Link>
     </div>

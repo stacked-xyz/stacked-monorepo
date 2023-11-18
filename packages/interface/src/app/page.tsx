@@ -7,47 +7,60 @@ import { TopUp } from "@/components/top-up";
 import NoAllocation from "@/components/no-allocation";
 import { AfterOnRamp } from "@/components/after-onramp";
 import { useRouter } from "next/navigation";
-import { OrderHistory } from "@/components/order-history";
 
-import { getAllocationObject } from "@/lib/utils";
-import { useComposition } from "@/store/allocationsContext";
+import { OrderHistory } from "@/components/order-history";
+import React from "react";
+
 import { useAccountAbstraction } from "@/store/accountAbstractionContext";
 import { MainNav } from "@/components/ui/main-nav";
 import AuthenticationPage from "./login/page";
+import { useComposition } from "@/store/allocationsContext";
+import { getAllocationObject } from "@/lib/utils";
 
 export default function Home() {
   const { isAuthenticated, ready } = useAccountAbstraction();
-  // const { composition } = useComposition();
   const router = useRouter();
+  const [fetched, setFetched] = React.useState(false);
+  const { composition: compositionFromServer, fetchComposition } =
+    useComposition();
 
-  // console.log({ composition });
+  React.useEffect(() => {
+    if (isAuthenticated && !fetched) {
+      fetchComposition("1");
+      setFetched(true);
+    }
+  }, [isAuthenticated, fetchComposition, fetched]);
+
   if (!ready) return null;
 
   if (!isAuthenticated) {
     return <AuthenticationPage />;
   }
 
-  const allocations = getAllocationObject();
-  const hasAllocation = Object.values(allocations).some((value) => value > 0);
+  const composition = compositionFromServer
+    ? getAllocationObject(compositionFromServer)
+    : {};
+
+  const hasAllocation = Object.values(composition).some(
+    (value) => (value as number) > 0
+  );
 
   return (
     <>
-      <div className="hidden flex-col md:flex md:px-8">
+      <div className="flex-col md:flex md:px-8">
         <div className="border-b">
-          <div className="flex h-16 items-center px-4">
-            {/* <TeamSwitcher /> */}
+          <div className="flex h-16 items-center justify-between px-4">
+            <span className="text-2xl font-bold tracking-tight px-4">
+              Stacked
+            </span>
             <MainNav className="mx-6" />
-            <div className="ml-auto flex items-center space-x-4">
-              {/* <Search />
-                <UserNav /> */}
-            </div>
           </div>
         </div>
         <div className="flex-1 space-y-4 p-8 pt-6">
           <div className="flex items-center justify-between space-y-2">
             <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
           </div>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle>Total Balance</CardTitle>
@@ -89,9 +102,18 @@ export default function Home() {
                 <CardTitle>Composition</CardTitle>
               </CardHeader>
               <CardContent className="pl-2 relative flex items-center justify-center">
-                <Composition allocations={allocations} />
-                {hasAllocation ? (
-                  <NoAllocation allocations={allocations} />
+                <Composition
+                  allocations={
+                    hasAllocation
+                      ? composition
+                      : getAllocationObject({
+                          assets: ["BTC", "ETH", "SOL", "AVAX"],
+                          allocations: [40, 20, 20, 20],
+                        })
+                  }
+                />
+                {!hasAllocation ? (
+                  <NoAllocation allocations={composition} />
                 ) : null}
               </CardContent>
             </Card>

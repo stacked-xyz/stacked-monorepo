@@ -8,6 +8,11 @@ interface CompositionContextShape {
   loading: boolean;
   error: string | null;
   fetchComposition: (userId: string) => Promise<void>;
+  updateComposition: (
+    userId: string,
+    composition: any,
+    chain?: number
+  ) => Promise<void>;
 }
 
 // Create the context
@@ -40,9 +45,31 @@ export const CompositionProvider = ({ children }: CompositionProviderProps) => {
     }
   };
 
+  const updateComposition = async (userId: string, composition, chain = 5) => {
+    try {
+      const result = await compositionRepo.updateComposition(
+        userId,
+        composition,
+        chain
+      );
+      return result;
+    } catch (e) {
+      const error = e as Error;
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <CompositionContext.Provider
-      value={{ composition, loading, error, fetchComposition }}
+      value={{
+        composition,
+        loading,
+        error,
+        fetchComposition,
+        updateComposition,
+      }}
     >
       {children}
     </CompositionContext.Provider>

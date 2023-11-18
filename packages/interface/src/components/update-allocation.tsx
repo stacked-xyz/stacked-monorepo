@@ -14,8 +14,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { TokenSelector } from "@/components/token-selector";
 import { Composition } from "@/components/ui/composition";
-
 import AllocationSlider from "./allocation-slider";
+import { useComposition } from "@/store/allocationsContext";
+import { reverseAllocationObject } from "@/lib/utils";
 
 export type Allocations = {
   [key: string]: number;
@@ -29,6 +30,7 @@ export function UpdateAllocation({
   const [selectedToken, setSelectedToken] = React.useState<string>("");
   const [allocationState, setAllocations] =
     React.useState<Allocations>(allocations);
+  const { composition, updateComposition } = useComposition();
 
   const updateAllocations = (newPercentage: number) => {
     // Update or add the selected token's percentage
@@ -99,7 +101,14 @@ export function UpdateAllocation({
           />
         ) : null}
         <DialogFooter>
-          <Button type="submit">Save changes</Button>
+          <Button
+            onClick={() => {
+              reverseAllocationObject(allocationState);
+              updateComposition("1", allocationState, 1);
+            }}
+          >
+            Save changes
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
