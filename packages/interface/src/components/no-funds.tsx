@@ -1,10 +1,8 @@
-"use client";
-
 import React from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 
 import { UpdateAllocation } from "./update-allocation";
+import { getAllocationObject } from "@/lib/utils";
 
 export function NoFunds() {
   return (
@@ -14,7 +12,7 @@ export function NoFunds() {
           <AlertTitle>Allocate</AlertTitle>
           <AlertDescription className="flex flex-col gap-6">
             Allocate funds to see your porfolio composition
-            <UpdateAllocation />
+            <UpdateAllocation allocations={getAllocationObject()} />
           </AlertDescription>
         </Alert>
       </div>

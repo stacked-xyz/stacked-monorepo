@@ -1,18 +1,13 @@
 import { Metadata } from "next";
-import Image from "next/image";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Composition } from "@/components/ui/composition";
 import { BalanceList } from "@/components/ui/balance-list";
 import { TopUp } from "@/components/top-up";
 import NoAllocation from "@/components/no-allocation";
 import { AfterOnRamp } from "@/components/after-onramp";
+
+import { getAllocationObject } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -20,24 +15,10 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
+  const allocations = getAllocationObject();
+  const hasAllocation = Object.values(allocations).some((value) => value > 0);
   return (
     <>
-      <div className="md:hidden">
-        <Image
-          src="/examples/dashboard-light.png"
-          width={1280}
-          height={866}
-          alt="Dashboard"
-          className="block dark:hidden"
-        />
-        <Image
-          src="/examples/dashboard-dark.png"
-          width={1280}
-          height={866}
-          alt="Dashboard"
-          className="hidden dark:block"
-        />
-      </div>
       <div className="hidden flex-col md:flex md:px-8">
         <div className="border-b">
           <div className="flex h-16 items-center px-4">
@@ -84,19 +65,21 @@ export default function Home() {
                       { symbol: "ETH", asset: "Ethereum", balance: 2400 },
                     ]}
                   />
-                  <TopUp wallet="TODO"/> 
+                  <TopUp wallet="TODO" />
                   <AfterOnRamp />
                 </div>
               </CardContent>
-              
             </Card>
             <Card className="col-span-3">
               <CardHeader>
                 <CardTitle>Composition</CardTitle>
               </CardHeader>
               <CardContent className="pl-2 relative flex items-center justify-center ">
-                <NoAllocation />
-                <Composition />
+                {hasAllocation ? (
+                  <NoAllocation allocations={allocations} />
+                ) : (
+                  <Composition allocations={allocations} />
+                )}
               </CardContent>
             </Card>
           </div>
