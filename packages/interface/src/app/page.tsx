@@ -10,6 +10,8 @@ import NoAllocation from "@/components/no-allocation";
 import { useAccountAbstraction } from "@/store/accountAbstractionContext";
 import { MainNav } from "@/components/ui/main-nav";
 import { useComposition } from "@/store/allocationsContext";
+import { TopUp } from "@/components/top-up";
+import { AfterOnRamp } from "@/components/after-onramp";
 
 export default function Home() {
    const { isAuthenticated } = useAccountAbstraction();
@@ -95,6 +97,8 @@ export default function Home() {
                                  },
                               ]}
                            />
+                           <TopUp wallet="TODO" />
+                           <AfterOnRamp />
                         </div>
                      </CardContent>
                   </Card>
