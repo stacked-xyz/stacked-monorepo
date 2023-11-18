@@ -1,18 +1,17 @@
-import { sendOrders } from ".";
-
 import Safe from "@safe-global/protocol-kit";
-import SafeApiKit from "@safe-global/api-kit";
 import { EthersAdapter } from "@safe-global/protocol-kit";
-import { BigNumber } from "ethers";
 import * as ethers from "ethers";
 import { OrderBookApi } from "@cowprotocol/cow-sdk";
 
+require("dotenv").config(".env");
+
+import { sendOrders } from "./index";
+
 const SAFE_ADDRESS = "0xa2A90829733969a9A559501157a0d3dd1A862BAd";
-const SIGNER_ADDRESS = "0x489AAF2B98185066012882DD7D28C52d1c9A1f09";
-const SIGNER_PK =
-  "0xd27ba1bd42e0faa9e76eab37c8efdb314d5def1e1e81ccb71b15fa2e225f2a07";
-const RPC_URL = "https://goerli.infura.io/v3/22bcdedae77e493c8b3de2cf109e11fb";
-const TX_SERVICE_URL = "https://safe-transaction-goerli.safe.global/";
+// const SIGNER_ADDRESS = "0x489AAF2B98185066012882DD7D28C52d1c9A1f09";
+const SIGNER_PK = process.env.GOERLI_SIGNER_PK!;
+const RPC_URL = process.env.GOERLI_RPC_URL!;
+// const TX_SERVICE_URL = "https://safe-transaction-goerli.safe.global/";
 const SETTLEMENT_CONTRACT_ADDRESS =
   "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
 const USDC = "0xD87Ba7A50B2E7E660f678A895E4B72E7CB4CCd9C";
@@ -34,26 +33,25 @@ async function main() {
   });
 
   const safeSdk = await Safe.create({ ethAdapter, safeAddress: SAFE_ADDRESS });
-  const safeApiKit = new SafeApiKit({
-    txServiceUrl: TX_SERVICE_URL,
-    ethAdapter,
-  });
+  // const safeApiKit = new SafeApiKit({
+  //   txServiceUrl: TX_SERVICE_URL,
+  //   ethAdapter,
+  // });
 
-  const orders = await sendOrders(
+  const { orders, signatureTxResponse } = await sendOrders(
     safeSdk,
-    safeApiKit,
     orderBookApi,
+    provider,
     SETTLEMENT_CONTRACT_ADDRESS,
     SAFE_ADDRESS,
-    SIGNER_ADDRESS,
     [
-      { token: DAI, allocation: 50 },
-      { token: WETH, allocation: 50 },
+      { token: DAI, weight: 0.5 },
+      { token: WETH, weight: 0.5 },
     ],
-    USDC,
-    BigNumber.from("100000000000000000")
+    USDC
   );
 
+  console.log(signatureTxResponse);
   for (const order of orders) {
     console.log(order.id);
   }
