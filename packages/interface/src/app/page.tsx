@@ -49,20 +49,20 @@ export default function Home() {
     <>
       <div className="flex-col md:flex md:px-8">
         <div className="border-b">
-          <div className="flex h-16 items-center justify-between px-4">
-            <span className="text-2xl font-bold tracking-tight px-4">
+          <div className="flex items-center justify-between h-16 px-4">
+            <span className="px-4 text-2xl font-bold tracking-tight">
               Stacked
             </span>
             <MainNav className="mx-6" />
           </div>
         </div>
-        <div className="flex-1 space-y-4 p-8 pt-6">
+        <div className="flex-1 p-8 pt-6 space-y-4">
           <div className="flex items-center justify-between space-y-2">
             <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle>Total Balance</CardTitle>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -72,7 +72,7 @@ export default function Home() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="2"
-                  className="h-4 w-4 text-muted-foreground"
+                  className="w-4 h-4 text-muted-foreground"
                 >
                   <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                 </svg>
@@ -101,7 +101,7 @@ export default function Home() {
               <CardHeader>
                 <CardTitle>Composition</CardTitle>
               </CardHeader>
-              <CardContent className="pl-2 relative flex items-center justify-center">
+              <CardContent className="relative flex items-center justify-center pl-2">
                 <Composition
                   allocations={
                     hasAllocation

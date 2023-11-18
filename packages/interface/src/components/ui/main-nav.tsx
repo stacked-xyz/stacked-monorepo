@@ -6,7 +6,8 @@ export function MainNav({
    className,
    ...props
 }: React.HTMLAttributes<HTMLElement>) {
-   const { isAuthenticated, ownerAddress } = useAccountAbstraction();
+   const { isAuthenticated, ownerAddress, logoutWeb3Auth } =
+      useAccountAbstraction();
 
    console.log("ownerAddress", ownerAddress);
 
@@ -15,11 +16,15 @@ export function MainNav({
          className={cn("flex items-center space-x-4 lg:space-x-6", className)}
          {...props}
       >
-         <div className="">
+         <div className="flex gap-2 fles-col">
             <Button variant="outline" type="button">
                {isAuthenticated
                   ? shortenAddress(ownerAddress || "")
                   : "Connect Wallet"}
+            </Button>
+
+            <Button variant="outline" type="button" onClick={logoutWeb3Auth}>
+               {"Disconnect Wallet"}
             </Button>
          </div>
       </nav>
