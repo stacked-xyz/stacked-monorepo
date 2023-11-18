@@ -52,16 +52,14 @@ async function main() {
   // });
 
   const { orders, signatureTxResponse } = await sendOrders(
-    safeSdk,
-    orderBookApi,
     provider,
-    GNOSIS_SETTLEMENT_CONTRACT_ADDRESS,
-    GNOSIS_SAFE_ADDRESS,
+    signer,
+    SIGNER_ADDRESS,
+    orderBookApi,
     [
-      { token: GNOSIS_WBTC, weight: 0.3 },
-      { token: GNOSIS_WETH, weight: 0.2 },
-      { token: GNOSIS_WXDAI, weight: 0.5 },
-      { token: GNOSIS_1INCH, weight: 0 },
+      { token: GNOSIS_WBTC, weight: 0 },
+      { token: GNOSIS_WETH, weight: 0 },
+      { token: GNOSIS_WXDAI, weight: 1 },
     ],
     GNOSIS_WXDAI
   );

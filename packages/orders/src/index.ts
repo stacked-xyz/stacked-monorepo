@@ -6,8 +6,10 @@ import {
   OrderQuoteSideKindSell,
   OrderCreation,
   OrderQuoteRequest,
+  OrderSigningUtils,
+  SupportedChainId,
 } from "@cowprotocol/cow-sdk";
-import { BigNumber, Contract, providers } from "ethers";
+import { BigNumber, Contract, Signer, providers } from "ethers";
 
 import settlementContractAbi from "./settlementContractAbi.json";
 import erc20Abi from "./erc20Abi.json";
@@ -68,7 +70,7 @@ type Balances = Balance[];
 type BalanceMap = Record<Address, BigNumber>;
 
 export async function getBalances(
-  safeAddress: Address,
+  signerAddress: Address,
   targetAllocation: TargetAllocation,
   provider: providers.Provider
 ): Promise<Balances> {
@@ -78,7 +80,7 @@ export async function getBalances(
       const contract = new Contract(asset.token, erc20Abi, provider);
       return {
         token: asset.token,
-        balance: await contract.balanceOf(safeAddress),
+        balance: await contract.balanceOf(signerAddress),
       };
     })
   );
@@ -86,7 +88,7 @@ export async function getBalances(
 
 export async function getBalancesInBaseAsset(
   orderBookApi: OrderBookApi,
-  safeAddress: Address,
+  signerAddress: Address,
   balances: Balances,
   baseAsset: Address
 ): Promise<Balances> {
@@ -101,7 +103,7 @@ export async function getBalancesInBaseAsset(
         buyToken: baseAsset,
         kind: OrderKind.SELL as unknown as OrderQuoteSideKindSell, // Fucked.
         sellAmountBeforeFee: asset.balance.toString(),
-        from: safeAddress,
+        from: signerAddress,
       };
 
       const quoteResponse = await orderBookApi.getQuote(order);
@@ -234,7 +236,7 @@ async function findMinMaxOrder(
   currentBalancesInBase: Balances,
   baseAsset: Address,
   orderBookApi: OrderBookApi,
-  safeAddress: Address
+  signerAddress: Address
 ): Promise<{
   top: Balance;
   bottom: Balance;
@@ -251,7 +253,7 @@ async function findMinMaxOrder(
   const topDiff = top.balance.sub(targetBalancesInBaseAssetMap[top.token]!);
 
   let deltaInBase;
-  if (bottomDiff.abs() > topDiff.abs()) {
+  if (bottomDiff.abs().gt(topDiff.abs())) {
     deltaInBase = topDiff.abs();
   } else {
     deltaInBase = bottomDiff.abs();
@@ -265,7 +267,7 @@ async function findMinMaxOrder(
       buyToken: top.token!,
       kind: OrderKind.SELL as unknown as OrderQuoteSideKindSell, // Fucked.
       sellAmountBeforeFee: deltaInBase.toString(),
-      from: safeAddress,
+      from: signerAddress,
     });
     amountOfTopToSell = BigNumber.from(quoteTopInBaseResp.quote.buyAmount);
   }
@@ -279,11 +281,12 @@ async function findMinMaxOrder(
 }
 
 export async function buildOrders(
+  signer: Signer,
   orderBookApi: OrderBookApi,
   currentBalancesInBase: Balances,
   targetBalancesInBase: Balances,
   baseAsset: Address,
-  safeAddress: Address
+  signerAddress: Address
 ): Promise<OrderCreation[]> {
   const targetBalancesInBaseMap = targetBalancesInBase.reduce<
     Record<Address, BigNumber>
@@ -302,7 +305,7 @@ export async function buildOrders(
         currentBalancesInBase,
         baseAsset,
         orderBookApi,
-        safeAddress
+        signerAddress
       );
 
     console.log(top, bottom, amountOfTopToSellInBase.toString());
@@ -326,7 +329,7 @@ export async function buildOrders(
       buyToken: bottom.token,
       kind: OrderQuoteSideKindSell.SELL,
       sellAmountBeforeFee: amountOfTopToSell.toString(),
-      from: safeAddress,
+      from: signerAddress,
     };
 
     console.log(quote);
@@ -340,10 +343,10 @@ export async function buildOrders(
       )
       .toString();
 
-    orders.push({
+    const order = {
       kind: quote.kind as string as OrderKind,
-      receiver: safeAddress,
-      from: safeAddress,
+      receiver: signerAddress,
+      from: signerAddress,
       sellToken: quote.sellToken,
       buyToken: quote.buyToken,
       partiallyFillable: false, // "false" is for a "Fill or Kill" order, "true" for allowing "Partial execution" which is not supported yet
@@ -361,9 +364,18 @@ export async function buildOrders(
       // The appData allows you to attach arbitrary information (meta-data) to the order. Its explained in their own section. For now, you can use this 0x0 value
       appData:
         "0x0000000000000000000000000000000000000000000000000000000000000000",
-      signingScheme: SigningScheme.PRESIGN,
-      signature: "0x",
-    });
+    };
+
+    const signedOrder = await OrderSigningUtils.signOrder(
+      order,
+      SupportedChainId.GNOSIS_CHAIN,
+      signer
+    );
+
+    orders.push({
+      ...order,
+      ...signedOrder,
+    } as any);
   }
 
   return orders;
@@ -412,21 +424,36 @@ export async function buildSignatureTx(
 }
 
 export async function sendOrders(
-  safeSdk: Safe,
-  orderBookApi: OrderBookApi,
   provider: providers.Provider,
-  settlementContractAddress: Address,
-  safeAddress: Address,
+  signer: Signer,
+  signerAddress: Address,
+  // safeSdk: Safe,
+  orderBookApi: OrderBookApi,
+  // settlementContractAddress: Address,
   targetAllocation: TargetAllocation,
   baseAsset: Address
 ): Promise<any> {
   targetAllocation = targetAllocationWithDefault(targetAllocation, baseAsset);
-  const balances = await getBalances(safeAddress, targetAllocation, provider);
+  const balances = await getBalances(signerAddress, targetAllocation, provider);
   logBalances(balances);
+
+  const spender = "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110";
+
+  for (const asset of targetAllocation) {
+    const assetContract = new Contract(asset.token, erc20Abi, signer);
+    const allowance = await assetContract.allowance(signerAddress, spender);
+    console.log(allowance);
+    if (allowance.isZero()) {
+      await assetContract.approve(
+        spender,
+        "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+      );
+    }
+  }
 
   const currentBalancesInBaseAsset = await getBalancesInBaseAsset(
     orderBookApi,
-    safeAddress,
+    signerAddress,
     balances,
     baseAsset
   );
@@ -440,21 +467,19 @@ export async function sendOrders(
   logBalances(targetBalancesInBaseAsset);
 
   const orders = await buildOrders(
+    signer,
     orderBookApi,
     currentBalancesInBaseAsset,
     targetBalancesInBaseAsset,
     baseAsset,
-    safeAddress
+    signerAddress
   );
-  console.log(orders);
-
   const ordersWithId = await sendOrdersToCow(orderBookApi, orders);
-  const signatureTx = await buildSignatureTx(
-    settlementContractAddress,
-    safeSdk,
-    ordersWithId
-  );
-  const signatureTxResponse = await safeSdk.executeTransaction(signatureTx);
-
-  return { orders: ordersWithId, signatureTxResponse };
+  return ordersWithId;
+  // const signatureTx = await buildSignatureTx(
+  //   settlementContractAddress,
+  //   safeSdk,
+  //   ordersWithId
+  // );
+  // return { orders: ordersWithId, signatureTxResponse };
 }
