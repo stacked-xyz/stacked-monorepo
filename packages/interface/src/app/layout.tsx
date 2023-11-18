@@ -1,6 +1,7 @@
 import "@/app/globals.css";
 import { GeistSans } from "geist/font/sans";
 import { cn } from "@/lib/utils";
+import Providers from "./Providers";
 
 interface RootLayoutProps {
   children: React.ReactNode;
@@ -18,7 +19,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           )}
         >
           <div className="relative flex min-h-screen flex-col">
-            <div className="flex-1">{children}</div>
+            <Providers>{children}</Providers>
           </div>
         </body>
       </html>

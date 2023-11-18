@@ -1,28 +1,26 @@
 import fleekStorage from "@fleekhq/fleek-storage-js";
-import { Composition } from "./types";
+import { Composition, token } from "./types";
 import "dotenv/config";
-import fs from "fs";
 
 export class CompositionRepo {
-   private isInitialised: boolean;
-   private fleekSecret: string;
-   private fleekKey: string;
-   private cowSupportedTokens: [
-      {
-         symbol: string;
-         name: string;
-         address: string;
-         decimals: number;
-         chainId: number;
-         logoURI: string;
-      }
-   ] = JSON.parse(fs.readFileSync("./constants/CowTokens.json", "utf-8"));
+   private isInitialised: boolean = false;
+   private fleekSecret: string = "";
+   private fleekKey: string = "";
+   private supportedTokens: token[] = [];
 
-   public init() {
+   public async init() {
       if (!this.isInitialised) {
+         if (
+            !process.env.REACT_APP_FLEEK_KEY ||
+            !process.env.REACT_APP_FLEEK_SECRET
+         ) {
+            throw new Error("Fleek key and secret must be provided");
+         }
+
          try {
             this.fleekKey = process.env.REACT_APP_FLEEK_KEY;
             this.fleekSecret = process.env.REACT_APP_FLEEK_SECRET;
+            this.supportedTokens = await this.getSupportedTokens();
          } catch (e) {
             console.error(e);
          }
@@ -62,6 +60,15 @@ export class CompositionRepo {
       return composition;
    }
 
+   private async getSupportedTokens(): Promise<token[]> {
+      const json = await fetch(
+         "https://raw.githubusercontent.com/cowprotocol/token-lists/main/src/public/CowSwap.json",
+         { mode: "cors" }
+      );
+      const data = await json.json();
+      return data.tokens;
+   }
+
    private validateComposition(
       composition: Composition,
       chainId: number
@@ -72,7 +79,7 @@ export class CompositionRepo {
          }
          for (let asset in composition.assets) {
             if (
-               !this.cowSupportedTokens.some(
+               !this.supportedTokens.some(
                   (token) =>
                      token.address.toLowerCase() === asset.toLowerCase() &&
                      token.chainId === chainId
