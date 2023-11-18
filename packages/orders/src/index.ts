@@ -11,6 +11,7 @@ import settlementContractAbi from "./settlementContractAbi.json";
 
 import Safe from "@safe-global/protocol-kit";
 import SafeApiKit from "@safe-global/api-kit";
+import { OperationType } from "@safe-global/safe-core-sdk-types";
 import { MetaTransactionData } from "@safe-global/safe-core-sdk-types";
 
 interface AssetAllocation {
@@ -63,6 +64,7 @@ export async function sendOrders(
     const orderCreation = {
       kind: OrderKind.SELL, // SELL or BUY
       receiver,
+      from: receiver,
       sellToken,
       buyToken,
 
@@ -83,11 +85,11 @@ export async function sendOrders(
       appData:
         "0x0000000000000000000000000000000000000000000000000000000000000000",
       signingScheme: SigningScheme.PRESIGN,
-      signature:
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      signature: "0x",
     };
 
     const id = await orderBookApi.sendOrder(orderCreation);
+    console.log(id);
     orders.push({
       id,
       order: orderCreation,
@@ -99,12 +101,20 @@ export async function sendOrders(
   }
 
   const presignTx = await safeSdk.createTransaction({
-    safeTransactionData: orders.map(({ signTx }) => signTx),
+    safeTransactionData: orders.map(({ signTx }) => ({
+      ...signTx,
+      value: "0",
+      operation: OperationType.Call,
+    })),
   });
+  // const executeTxResponse = await safeSdk.executeTransaction(presignTx);
+  // console.log(executeTxResponse);
 
-  // const nonce = await safeService.getNextNonce(receiver); Do we need?
+  // const nonce = await safeService.getNextNonce(receiver); Do we need ?
   const safeTxHash = await safeSdk.getTransactionHash(presignTx);
   const senderSignature = await safeSdk.signTransactionHash(safeTxHash);
+  console.log(safeTxHash);
+  console.log(senderSignature);
 
   await safeService.proposeTransaction({
     safeAddress: receiver,
@@ -112,7 +122,6 @@ export async function sendOrders(
     safeTxHash,
     senderAddress,
     senderSignature: senderSignature.data,
-    origin,
   });
 
   return orders;
