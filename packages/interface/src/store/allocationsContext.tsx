@@ -1,5 +1,6 @@
 "use client";
 import React, { createContext, useState, useEffect, useContext } from "react"; 
+import { CompositionRepo, Composition } from "@stacked-xyz/data-access/src/";
 
 // Define the context shape
 interface CompositionContextShape {
