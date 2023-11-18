@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   DialogTrigger,
@@ -8,11 +10,69 @@ import {
   Dialog,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
-export function UpdateAllocation() {
+import { Button } from "@/components/ui/button";
+import { TokenSelector } from "@/components/token-selector";
+import { Composition } from "@/components/ui/composition";
+
+import AllocationSlider from "./allocation-slider";
+
+export type Allocations = {
+  [key: string]: number;
+};
+
+export function UpdateAllocation({
+  allocations,
+}: {
+  allocations: Allocations;
+}) {
+  const [selectedToken, setSelectedToken] = React.useState<string>("");
+  const [allocationState, setAllocations] =
+    React.useState<Allocations>(allocations);
+
+  const updateAllocations = (newPercentage: number) => {
+    // Update or add the selected token's percentage
+    const newAllocations = {
+      ...allocationState,
+      [selectedToken]: newPercentage,
+    };
+
+    const newAllocationsAdjusted = adjustOtherAllocations(
+      newAllocations,
+      selectedToken,
+      newPercentage
+    );
+
+    setAllocations(newAllocationsAdjusted);
+  };
+
+  const adjustOtherAllocations = (
+    newAllocations: Allocations,
+    selectedToken: string,
+    newPercentage: number
+  ) => {
+    // Calculate the total percentage allocated to other tokens
+    const totalOtherAllocations = Object.entries(newAllocations)
+      .filter(([token, _]) => token !== selectedToken)
+      .reduce((sum, [_, percentage]) => sum + percentage, 0);
+
+    // Calculate the adjustment ratio for other allocations
+    const adjustmentRatio = (100 - newPercentage) / totalOtherAllocations;
+
+    // Adjust the percentages of other tokens
+    Object.keys(newAllocations).forEach((token) => {
+      if (token !== selectedToken) {
+        newAllocations[token] = Math.round(
+          newAllocations[token] * adjustmentRatio
+        );
+      }
+    });
+
+    return newAllocations;
+  };
+
+  if (!allocations) return null;
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -22,31 +82,22 @@ export function UpdateAllocation() {
         <DialogHeader>
           <DialogTitle>Update Alloction</DialogTitle>
           <DialogDescription>
-            Make changes to your profile here. Click save when you&apos;re done.
+            Make changes to your allocation here. Click save when you&apos;re
+            done.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input
-              id="name"
-              defaultValue="Pedro Duarte"
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="username" className="text-right">
-              Username
-            </Label>
-            <Input
-              id="username"
-              defaultValue="@peduarte"
-              className="col-span-3"
-            />
-          </div>
-        </div>
+        <Composition allocations={allocationState} />
+        <TokenSelector
+          allocations={allocations}
+          selectedToken={selectedToken}
+          setSelectedToken={setSelectedToken}
+        />
+        {selectedToken ? (
+          <AllocationSlider
+            defaultValue={allocationState[selectedToken]}
+            onChange={updateAllocations}
+          />
+        ) : null}
         <DialogFooter>
           <Button type="submit">Save changes</Button>
         </DialogFooter>
