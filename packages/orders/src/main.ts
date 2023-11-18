@@ -7,19 +7,29 @@ require("dotenv").config(".env");
 
 import { sendOrders } from "./index";
 
-const SAFE_ADDRESS = "0xa2A90829733969a9A559501157a0d3dd1A862BAd";
-// const SIGNER_ADDRESS = "0x489AAF2B98185066012882DD7D28C52d1c9A1f09";
-const SIGNER_PK = process.env.GOERLI_SIGNER_PK!;
-const RPC_URL = process.env.GOERLI_RPC_URL!;
-// const TX_SERVICE_URL = "https://safe-transaction-goerli.safe.global/";
-const SETTLEMENT_CONTRACT_ADDRESS =
-  "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
-const USDC = "0xD87Ba7A50B2E7E660f678A895E4B72E7CB4CCd9C";
-const WETH = "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6";
-const DAI = "0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60";
-// const RELAYER = "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110";
+export const GOERLI_SAFE_ADDRESS = "0xa2A90829733969a9A559501157a0d3dd1A862BAd";
+export const GNOSIS_SAFE_ADDRESS = "0x9EB8c96CDfF9712c0f428E26B1E9bad2d07e3091";
+export const SIGNER_ADDRESS = "0x489AAF2B98185066012882DD7D28C52d1c9A1f09";
 
-const chainId = 5;
+const SIGNER_PK = process.env.SIGNER_PK!;
+const RPC_URL = process.env.GNOSIS_RPC_URL!;
+
+// const TX_SERVICE_URL = "https://safe-transaction-goerli.safe.global/";
+export const GOERLI_SETTLEMENT_CONTRACT_ADDRESS =
+  "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
+export const GNOSIS_SETTLEMENT_CONTRACT_ADDRESS =
+  "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
+export const GOERLI_USDC = "0xD87Ba7A50B2E7E660f678A895E4B72E7CB4CCd9C";
+export const GOERLI_WETH = "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6";
+export const GOERLI_DAI = "0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60";
+// const RELAYER = "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110";
+//
+export const GNOSIS_WXDAI = "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d";
+export const GNOSIS_WBTC = "0x8e5bbbb09ed1ebde8674cda39a0c169401db4252";
+export const GNOSIS_WETH = "0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1";
+export const GNOSIS_1INCH = "0x7f7440c5098462f833e123b44b8a03e1d9785bab";
+
+const chainId = 100; // 5;
 
 const orderBookApi = new OrderBookApi({ chainId });
 
@@ -32,7 +42,10 @@ async function main() {
     signerOrProvider: signer,
   });
 
-  const safeSdk = await Safe.create({ ethAdapter, safeAddress: SAFE_ADDRESS });
+  const safeSdk = await Safe.create({
+    ethAdapter,
+    safeAddress: GNOSIS_SAFE_ADDRESS,
+  });
   // const safeApiKit = new SafeApiKit({
   //   txServiceUrl: TX_SERVICE_URL,
   //   ethAdapter,
@@ -42,13 +55,15 @@ async function main() {
     safeSdk,
     orderBookApi,
     provider,
-    SETTLEMENT_CONTRACT_ADDRESS,
-    SAFE_ADDRESS,
+    GNOSIS_SETTLEMENT_CONTRACT_ADDRESS,
+    GNOSIS_SAFE_ADDRESS,
     [
-      { token: DAI, weight: 0.5 },
-      { token: WETH, weight: 0.5 },
+      { token: GNOSIS_WBTC, weight: 0.3 },
+      { token: GNOSIS_WETH, weight: 0.2 },
+      { token: GNOSIS_WXDAI, weight: 0.5 },
+      { token: GNOSIS_1INCH, weight: 0 },
     ],
-    USDC
+    GNOSIS_WXDAI
   );
 
   console.log(signatureTxResponse);

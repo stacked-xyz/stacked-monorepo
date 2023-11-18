@@ -4,7 +4,6 @@ import {
   Address,
   SigningScheme,
   OrderQuoteSideKindSell,
-  OrderQuoteSideKindBuy,
   OrderCreation,
   OrderQuoteRequest,
 } from "@cowprotocol/cow-sdk";
@@ -28,16 +27,21 @@ interface AssetWeight {
 
 type TargetAllocation = AssetWeight[];
 
-interface ScalingFactor {
-  token: Address;
-  scalingFactor: number;
-}
-
-type ScalingFactors = ScalingFactor[];
-
 type OrderWithId = OrderCreation & { id: string };
 
 const PRECISION = 10000;
+
+function logBalances(balances: Balances) {
+  console.log(
+    "---------------------------------------------------------------------"
+  );
+  balances.forEach((b) => {
+    console.log(`${b.token}: ${b.balance.toString()}`);
+  });
+  console.log(
+    "---------------------------------------------------------------------"
+  );
+}
 
 /**
  * Set baseAsset (USDC) to 0 weight in target allocation if it's not present.
@@ -59,7 +63,9 @@ export function targetAllocationWithDefault(
   }
 }
 
-type Balances = Array<{ token: Address; balance: BigNumber }>;
+type Balance = { token: Address; balance: BigNumber };
+type Balances = Balance[];
+type BalanceMap = Record<Address, BigNumber>;
 
 export async function getBalances(
   safeAddress: Address,
@@ -86,7 +92,7 @@ export async function getBalancesInBaseAsset(
 ): Promise<Balances> {
   return Promise.all(
     balances.map(async (asset) => {
-      if (asset.token == baseAsset) {
+      if (asset.token == baseAsset || asset.balance.isZero()) {
         return asset;
       }
 
@@ -109,10 +115,10 @@ export async function getBalancesInBaseAsset(
   );
 }
 
-export function getScalingFactors(
+export function getTargetBalancesInBaseAsset(
   balances: Balances,
   targetAllocation: TargetAllocation
-): ScalingFactors {
+): Balances {
   const targetAllocationMap = targetAllocation.reduce<Record<Address, number>>(
     (acc, asset) => {
       acc[asset.token] = asset.weight;
@@ -131,71 +137,208 @@ export function getScalingFactors(
     if (targetWeight === 0) {
       return {
         token: asset.token,
-        scalingFactor: 0,
+        balance: BigNumber.from(0),
       };
     }
-    const targetBalance = totalBalance
-      .mul((targetWeight * PRECISION).toFixed())
-      .div(PRECISION);
-    const scalingFactor =
-      asset.balance.mul(PRECISION).div(targetBalance).toNumber() / PRECISION;
-
     return {
       token: asset.token,
-      scalingFactor,
+      balance: totalBalance
+        .mul((targetWeight * PRECISION).toFixed())
+        .div(PRECISION),
     };
   });
 }
 
-const E = 0.0001;
+const E = 0.001;
+
+type PercentageDelta = Array<{ token: Address; pctDelta: number }>;
+
+function percentageDelta(a: Balances, b: Balances): PercentageDelta {
+  const aMap = a.reduce<Record<Address, BigNumber>>((acc, asset) => {
+    acc[asset.token] = asset.balance;
+    return acc;
+  }, {});
+
+  return b.map((asset) => {
+    const bBalance = asset.balance;
+    const aBalance = aMap[asset.token]!;
+
+    const diff = bBalance.sub(aMap[asset.token]!);
+
+    if (aBalance.isZero()) {
+      if (bBalance.isZero()) {
+        return {
+          token: asset.token,
+          pctDelta: 0,
+        };
+      }
+      return {
+        token: asset.token,
+        pctDelta: Infinity,
+      };
+    } else {
+      const pctDelta =
+        diff.mul(PRECISION).div(aMap[asset.token]!).toNumber() / PRECISION;
+      return {
+        token: asset.token,
+        pctDelta,
+      };
+    }
+  });
+}
+
+function getMinAndMax(
+  currentBalancesInBase: Balances,
+  targetBalancesInBase: Balances
+): [Balance, Balance] {
+  const targetBalancesInBaseMap = targetBalancesInBase.reduce<
+    Record<Address, BigNumber>
+  >((acc, asset) => {
+    acc[asset.token] = asset.balance;
+    return acc;
+  }, {});
+
+  let min = undefined;
+  let max = undefined;
+  let minDiff = undefined;
+  let maxDiff = undefined;
+
+  for (const asset of currentBalancesInBase) {
+    const assetDiff = asset.balance.sub(targetBalancesInBaseMap[asset.token]!);
+    // const assetDiff = targetBalancesInBaseMap[asset.token]!.sub(asset.balance);
+    console.log(asset.token, assetDiff.toString());
+
+    if (min == undefined && max == undefined) {
+      min = asset;
+      max = asset;
+      minDiff = assetDiff;
+      maxDiff = assetDiff;
+      continue;
+    }
+    if (assetDiff.gt(maxDiff!)) {
+      max = asset;
+      maxDiff = assetDiff;
+    }
+    if (assetDiff.lt(minDiff!)) {
+      min = asset;
+      minDiff = assetDiff;
+    }
+  }
+
+  return [min!, max!];
+}
+
+async function findMinMaxOrder(
+  targetBalancesInBaseAssetMap: BalanceMap,
+  targetBalancesInBase: Balances,
+  currentBalancesInBase: Balances,
+  baseAsset: Address,
+  orderBookApi: OrderBookApi,
+  safeAddress: Address
+): Promise<{
+  top: Balance;
+  bottom: Balance;
+  amountOfTopToSellInBase: BigNumber;
+  amountOfTopToSell: BigNumber;
+}> {
+  const [bottom, top] = getMinAndMax(
+    currentBalancesInBase,
+    targetBalancesInBase
+  );
+  const bottomDiff = bottom.balance.sub(
+    targetBalancesInBaseAssetMap[bottom.token]!
+  );
+  const topDiff = top.balance.sub(targetBalancesInBaseAssetMap[top.token]!);
+
+  let deltaInBase;
+  if (bottomDiff.abs() > topDiff.abs()) {
+    deltaInBase = topDiff.abs();
+  } else {
+    deltaInBase = bottomDiff.abs();
+  }
+
+  let amountOfTopToSell = deltaInBase;
+
+  if (top.token != baseAsset) {
+    const quoteTopInBaseResp = await orderBookApi.getQuote({
+      sellToken: baseAsset,
+      buyToken: top.token!,
+      kind: OrderKind.SELL as unknown as OrderQuoteSideKindSell, // Fucked.
+      sellAmountBeforeFee: deltaInBase.toString(),
+      from: safeAddress,
+    });
+    amountOfTopToSell = BigNumber.from(quoteTopInBaseResp.quote.buyAmount);
+  }
+
+  return {
+    top: top,
+    bottom: bottom,
+    amountOfTopToSellInBase: deltaInBase,
+    amountOfTopToSell,
+  };
+}
 
 export async function buildOrders(
   orderBookApi: OrderBookApi,
-  balances: Balances,
-  scalingFactors: ScalingFactors,
+  currentBalancesInBase: Balances,
+  targetBalancesInBase: Balances,
   baseAsset: Address,
   safeAddress: Address
 ): Promise<OrderCreation[]> {
-  const scalingFactorMap = scalingFactors.reduce<Record<Address, number>>(
-    (acc, asset) => {
-      acc[asset.token] = asset.scalingFactor;
-      return acc;
-    },
-    {}
-  );
+  const targetBalancesInBaseMap = targetBalancesInBase.reduce<
+    Record<Address, BigNumber>
+  >((acc, asset) => {
+    acc[asset.token] = asset.balance;
+    return acc;
+  }, {});
 
   const orders: OrderCreation[] = [];
-  for (const asset of balances) {
-    const scalingFactor = scalingFactorMap[asset.token]!;
-    if (asset.token === baseAsset || Math.abs(1 - scalingFactor) < E) continue;
-    const targetBalance = asset.balance
-      .mul((scalingFactor * PRECISION).toFixed())
-      .div(PRECISION);
+  let delta = percentageDelta(currentBalancesInBase, targetBalancesInBase);
+  while (delta.find((d) => d.pctDelta > E)) {
+    const { top, bottom, amountOfTopToSellInBase, amountOfTopToSell } =
+      await findMinMaxOrder(
+        targetBalancesInBaseMap,
+        targetBalancesInBase,
+        currentBalancesInBase,
+        baseAsset,
+        orderBookApi,
+        safeAddress
+      );
 
-    let quote: OrderQuoteRequest;
-    if (targetBalance.gt(asset.balance)) {
-      // Buy Portfolio Asset with Base Asset
-      quote = {
-        sellToken: baseAsset,
-        buyToken: asset.token,
-        kind: OrderQuoteSideKindBuy.BUY,
-        buyAmountAfterFee: targetBalance.sub(asset.balance).toString(),
-        from: safeAddress,
-      };
-    } else {
-      quote = {
-        sellToken: asset.token,
-        buyToken: baseAsset,
-        kind: OrderQuoteSideKindSell.SELL, // Fucked.
-        sellAmountBeforeFee: asset.balance.sub(targetBalance).toString(),
-        from: safeAddress,
-        receiver: safeAddress,
-      };
-    }
+    console.log(top, bottom, amountOfTopToSellInBase.toString());
 
+    currentBalancesInBase = currentBalancesInBase.map((asset) => {
+      let balance = BigNumber.from(asset.balance);
+      if (asset.token == bottom.token) {
+        balance = balance.add(amountOfTopToSellInBase);
+      }
+      if (asset.token == top.token) {
+        balance = balance.sub(amountOfTopToSellInBase);
+      }
+      return { token: asset.token, balance };
+    });
+    logBalances(currentBalancesInBase);
+    delta = percentageDelta(currentBalancesInBase, targetBalancesInBase);
+    console.log(delta);
+
+    const quote: OrderQuoteRequest = {
+      sellToken: top.token,
+      buyToken: bottom.token,
+      kind: OrderQuoteSideKindSell.SELL,
+      sellAmountBeforeFee: amountOfTopToSell.toString(),
+      from: safeAddress,
+    };
+
+    console.log(quote);
     const quoteResponse = await orderBookApi.getQuote(quote);
 
-    const { validTo, buyAmount, sellAmount, feeAmount } = quoteResponse.quote;
+    let { buyAmount, sellAmount, feeAmount } = quoteResponse.quote;
+    const buyAmountBN = BigNumber.from(buyAmount);
+    const buyAmountWithSlippage = buyAmountBN
+      .sub(
+        buyAmountBN.div(100).mul(2) /// 2% slippage
+      )
+      .toString();
 
     orders.push({
       kind: quote.kind as string as OrderKind,
@@ -205,12 +348,12 @@ export async function buildOrders(
       buyToken: quote.buyToken,
       partiallyFillable: false, // "false" is for a "Fill or Kill" order, "true" for allowing "Partial execution" which is not supported yet
       // Deadline
-      validTo,
+      validTo: Math.floor(new Date().getTime() / 1000) + 2 * 60,
       // Limit Price
       //    You can apply some slippage tolerance here to make sure the trade is executed.
       //    CoW protocol protects from MEV, so it can work with higher slippages
       sellAmount,
-      buyAmount,
+      buyAmount: buyAmountWithSlippage,
 
       // Use the fee you received from the API
       feeAmount,
@@ -279,26 +422,27 @@ export async function sendOrders(
 ): Promise<any> {
   targetAllocation = targetAllocationWithDefault(targetAllocation, baseAsset);
   const balances = await getBalances(safeAddress, targetAllocation, provider);
-  console.log("Balances: ", balances);
+  logBalances(balances);
 
-  const balancesInBaseAsset = await getBalancesInBaseAsset(
+  const currentBalancesInBaseAsset = await getBalancesInBaseAsset(
     orderBookApi,
     safeAddress,
     balances,
     baseAsset
   );
-  console.log("BalancesInBaseAsset: ", balancesInBaseAsset);
+  logBalances(currentBalancesInBaseAsset);
 
-  const scalingFactors = getScalingFactors(
-    balancesInBaseAsset,
+  const targetBalancesInBaseAsset = getTargetBalancesInBaseAsset(
+    currentBalancesInBaseAsset,
     targetAllocation
   );
-  console.log("ScalingFactors: ", scalingFactors);
+
+  logBalances(targetBalancesInBaseAsset);
 
   const orders = await buildOrders(
     orderBookApi,
-    balances,
-    scalingFactors,
+    currentBalancesInBaseAsset,
+    targetBalancesInBaseAsset,
     baseAsset,
     safeAddress
   );
