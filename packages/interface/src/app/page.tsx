@@ -7,6 +7,7 @@ import { TopUp } from "@/components/top-up";
 import NoAllocation from "@/components/no-allocation";
 import { AfterOnRamp } from "@/components/after-onramp";
 import { useRouter } from "next/navigation";
+import { OrderHistory } from "@/components/order-history";
 
 import { getAllocationObject } from "@/lib/utils";
 import { useComposition } from "@/store/allocationsContext";
@@ -91,6 +92,9 @@ export default function Home() {
               </CardContent>
             </Card>
           </div>
+            <Card>
+              <OrderHistory wallet="" chainId={1}/>
+            </Card>
         </div>
       </div>
     </>
