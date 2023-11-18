@@ -1,7 +1,6 @@
 import fleekStorage from "@fleekhq/fleek-storage-js";
-import { Composition, token } from "./types";
+import { Composition, token } from "../types";
 import "dotenv/config";
-import fs from "fs";
 
 export class CompositionRepo {
    private isInitialised: boolean = false;
