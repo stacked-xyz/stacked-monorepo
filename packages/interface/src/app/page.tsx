@@ -10,7 +10,9 @@ import {
 } from "@/components/ui/card";
 import { Composition } from "@/components/ui/composition";
 import { BalanceList } from "@/components/ui/balance-list";
+import { TopUp } from "@/components/top-up";
 import NoAllocation from "@/components/no-allocation";
+import { AfterOnRamp } from "@/components/after-onramp";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -82,8 +84,11 @@ export default function Home() {
                       { symbol: "ETH", asset: "Ethereum", balance: 2400 },
                     ]}
                   />
+                  <TopUp wallet="TODO"/> 
+                  <AfterOnRamp />
                 </div>
               </CardContent>
+              
             </Card>
             <Card className="col-span-3">
               <CardHeader>
