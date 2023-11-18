@@ -22,15 +22,15 @@ const formatDate = (date: Date) => {
 
 export function OrderHistory() {
     // Load these from state
-    const { ownerAddress, chainId } = useAccountAbstraction();
+    const { ownerAddress, numChainId } = useAccountAbstraction();
     // const wallet = "0x9EB8c96CDfF9712c0f428E26B1E9bad2d07e3091";
 
-    const { tokensMap } = useTokens(parseInt(chainId));
-    const { orders, loaded } = useOrderHistory(ownerAddress!, parseInt(chainId));
+    const { tokensByAddress } = useTokens(numChainId);
+    const { orders, loaded } = useOrderHistory(ownerAddress!, numChainId);
 
     const parsedOrders = orders.map((order) => {
-        const fromToken:Token = tokensMap.get(order.sellToken.toLowerCase()) || UnknownToken;
-        const toToken:Token = tokensMap.get(order.buyToken.toLowerCase()) || UnknownToken;
+        const fromToken:Token = tokensByAddress.get(order.sellToken.toLowerCase()) || UnknownToken;
+        const toToken:Token = tokensByAddress.get(order.buyToken.toLowerCase()) || UnknownToken;
 
         const fromAmount = utils.formatUnits(order.sellAmount, fromToken.decimals);
         const toAmount = utils.formatUnits(order.buyAmount, fromToken.decimals);

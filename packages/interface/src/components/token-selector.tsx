@@ -19,40 +19,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Allocations } from "./update-allocation";
-
-export interface Token {
-  symbol: string;
-  name: string;
-}
-
-export const tokens: Token[] = [
-  { symbol: "XMR", name: "Monero" },
-  { symbol: "DAI", name: "Dai" },
-  { symbol: "AAVE", name: "Aave" },
-  { symbol: "DOT", name: "Polkadot" },
-  { symbol: "CRV", name: "Curve DAO Token" },
-  { symbol: "USDT", name: "Tether USD" },
-  { symbol: "LTC", name: "Litecoin" },
-  { symbol: "SOL", name: "Solana" },
-  { symbol: "UNI", name: "Uniswap" },
-  { symbol: "TRX", name: "TRON" },
-  { symbol: "BNB", name: "BNB" },
-  { symbol: "ADA", name: "Cardano" },
-  { symbol: "EOS", name: "EOS" },
-  { symbol: "DOGE", name: "Dogecoin" },
-  { symbol: "MATIC", name: "Polygon" },
-  { symbol: "BTC", name: "Bitcoin" },
-  { symbol: "ETH", name: "Ethereum" },
-  { symbol: "AVAX", name: "Avalance" },
-];
+import { useAccountAbstraction } from "@/store/accountAbstractionContext";
+import { Token, useTokens } from "@/hooks/useTokens";
 
 export const allocations = {
   BTC: 60,
   ETH: 40,
-};
-
-const getTokenBasedOnSymbol = (symbol: string) => {
-  return tokens.find((token) => token.symbol === symbol);
 };
 
 export function TokenSelector({
@@ -65,6 +37,8 @@ export function TokenSelector({
   setSelectedToken: React.Dispatch<React.SetStateAction<string>>;
   allocations: Allocations;
 }) {
+  const { numChainId } = useAccountAbstraction()
+  const { tokens, tokensBySymbol } = useTokens(numChainId)
   const [open, setOpen] = React.useState(false);
 
   const getAllocatedAndUnallocatedTokens = () => {
@@ -96,7 +70,7 @@ export function TokenSelector({
           className="flex-1 justify-between w-full"
         >
           {selectedToken
-            ? getTokenBasedOnSymbol(selectedToken)?.name
+            ? tokensBySymbol.get(selectedToken)!.name
             : "Select a token..."}
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -127,8 +101,7 @@ export function TokenSelector({
                         <CheckIcon
                           className={cn(
                             "ml-auto h-4 w-4",
-                            getTokenBasedOnSymbol(selectedToken)?.symbol ===
-                              token.symbol
+                            selectedToken === token.symbol
                               ? "opacity-100"
                               : "opacity-0"
                           )}
@@ -153,8 +126,7 @@ export function TokenSelector({
                     <CheckIcon
                       className={cn(
                         "ml-auto h-4 w-4",
-                        getTokenBasedOnSymbol(selectedToken)?.symbol ===
-                          token.symbol
+                        selectedToken === token.symbol
                           ? "opacity-100"
                           : "opacity-0"
                       )}

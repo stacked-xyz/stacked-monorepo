@@ -7,7 +7,7 @@ import {
    useEffect,
    useState,
 } from "react";
-import { ethers, utils } from "ethers";
+import { BigNumber, ethers, utils } from "ethers";
 import { CHAIN_NAMESPACES, WALLET_ADAPTERS } from "@web3auth/base";
 import { Web3AuthOptions } from "@web3auth/modal";
 import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
@@ -28,6 +28,7 @@ type accountAbstractionContextValue = {
    loginWeb3Auth: () => void;
    logoutWeb3Auth: () => void;
    setChainId: (chainId: string) => void;
+   numChainId: number;
 };
 
 const initialState = {
@@ -198,6 +199,7 @@ const AccountAbstractionProvider = ({
       logoutWeb3Auth,
       setChainId,
       ready,
+      numChainId: BigNumber.from(chainId).toNumber()
    };
 
    return (
