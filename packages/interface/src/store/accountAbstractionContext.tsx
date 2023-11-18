@@ -168,15 +168,18 @@ const AccountAbstractionProvider = ({
 
    // This effect will try to see if the user is logged in already
    useEffect(() => {
-      if (web3AuthModalPack && web3AuthModalPack.getProvider()) {
-         (async () => {
-            await loginWeb3Auth();
-            setReady(true);
-         })();
-      } else {
-         setReady(true);
-      }
-   }, [web3AuthModalPack, loginWeb3Auth]);
+      if (web3AuthModalPack) {
+        if (web3AuthModalPack.getProvider()) {
+          (async () => {
+              console.log("Before loginWeb3Auth")
+              await loginWeb3Auth();
+              setReady(true);
+          })();
+        } else {
+          setReady(true);
+        }  
+      } 
+    }, [web3AuthModalPack, loginWeb3Auth]);
 
    const logoutWeb3Auth = () => {
       web3AuthModalPack?.signOut();
