@@ -65,8 +65,8 @@ export function targetAllocationWithDefault(
   }
 }
 
-type Balance = { token: Address; balance: BigNumber };
-type Balances = Balance[];
+export type Balance = { token: Address; balance: BigNumber };
+export type Balances = Balance[];
 type BalanceMap = Record<Address, BigNumber>;
 
 export async function getBalances(
