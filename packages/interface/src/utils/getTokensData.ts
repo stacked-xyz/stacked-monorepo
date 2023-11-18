@@ -10,7 +10,6 @@ export type tokenData = {
     decimals: number,
     balance: number
  }
- 
 
 const provider = new ethers.providers.JsonRpcProvider("https://rpc.ankr.com/eth");
 const { ownerAddress } = useAccountAbstraction();

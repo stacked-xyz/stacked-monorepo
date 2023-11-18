@@ -1,4 +1,4 @@
-
+import { getBalances } from "@utils/get-balances";
 
 
 export function BalanceList{
