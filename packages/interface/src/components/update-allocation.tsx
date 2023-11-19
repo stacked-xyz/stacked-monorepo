@@ -18,6 +18,8 @@ import AllocationSlider from "./allocation-slider";
 import { useComposition } from "@/store/allocationsContext";
 import { reverseAllocationObject } from "@/lib/utils";
 import { useAccountAbstraction } from "@/store/accountAbstractionContext";
+import { ReloadIcon } from "@radix-ui/react-icons";
+import { useToast } from "@/components/ui/use-toast";
 
 export type Allocations = {
   [key: string]: number;
@@ -31,8 +33,10 @@ export function UpdateAllocation({
   const [selectedToken, setSelectedToken] = React.useState<string>("");
   const [allocationState, setAllocations] =
     React.useState<Allocations>(allocations);
-  const { composition, updateComposition, error } = useComposition();
+  const { composition, updateComposition, error, loading } = useComposition();
   const { ownerAddress } = useAccountAbstraction();
+  const [open, setOpen] = React.useState(false);
+  const { toast } = useToast();
 
   if (ownerAddress === undefined || ownerAddress === "") return null;
 
@@ -80,9 +84,21 @@ export function UpdateAllocation({
   const saveAllocation = async () => {
     const stateForDB = reverseAllocationObject(allocationState);
 
-    const result = await updateComposition(ownerAddress, stateForDB, 1);
-
-    console.log({ result });
+    try {
+      const result = await updateComposition(ownerAddress, stateForDB, 1);
+      setOpen(false);
+      toast({
+        title: "Success",
+        description: "Your allocation has been updated.",
+      });
+    } catch (e) {
+      const error = e as Error;
+      toast({
+        variant: "destructive",
+        title: `Error updating your allocation`,
+        description: `${error.name}: ${error.message}`,
+      });
+    }
   };
 
   console.log({
@@ -93,7 +109,7 @@ export function UpdateAllocation({
   if (!allocations) return null;
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>Update Allocation</Button>
       </DialogTrigger>
@@ -118,7 +134,16 @@ export function UpdateAllocation({
           />
         ) : null}
         <DialogFooter>
-          <Button onClick={saveAllocation}>Save changes</Button>
+          <Button disabled={loading} onClick={saveAllocation}>
+            {loading ? (
+              <>
+                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </>
+            ) : (
+              <> Save changes </>
+            )}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
