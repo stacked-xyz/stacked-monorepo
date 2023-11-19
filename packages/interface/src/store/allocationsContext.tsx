@@ -27,76 +27,65 @@ const CompositionContext = createContext<CompositionContextShape | null>(null);
 
 // Provider component interface
 interface CompositionProviderProps {
-  children: React.ReactNode;
+   children: React.ReactNode;
 }
 
 // Provider component
 export const CompositionProvider = ({ children }: CompositionProviderProps) => {
-  const [composition, setComposition] = useState<Composition | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+   const [composition, setComposition] = useState<Composition | null>(null);
+   const [loading, setLoading] = useState<boolean>(false);
+   const [error, setError] = useState<string | null>(null);
 
-  const compositionRepo = new CompositionRepo();
-  compositionRepo.init();
+   const compositionRepo = new CompositionRepo();
+   compositionRepo.init();
 
-  const fetchComposition = async (userId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const userComposition = await compositionRepo.getComposition(userId);
-      setComposition(userComposition);
-    } catch (e) {
-      const error = e as Error;
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+   const fetchComposition = async (userId: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+         const userComposition = await compositionRepo.getComposition(userId);
+         setComposition(userComposition);
+      } catch (e) {
+         const error = e as Error;
+         setError(error.message);
+      } finally {
+         setLoading(false);
+      }
+   };
 
-  const updateComposition = async (
-    userId: string,
-    composition: Composition,
-    chain = 5
-  ) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await compositionRepo.updateComposition(
-        userId,
-        composition,
-        chain
-      );
-      return result;
-    } catch (e) {
-      const error = e as Error;
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+   const updateComposition = async (
+      userId: string,
+      composition: Composition,
+      chain = 5
+   ) => {
+      setLoading(true);
+      setError(null);
+      try {
+         const result = await compositionRepo.updateComposition(
+            userId,
+            composition,
+            chain
+         );
+         return result;
+      } catch (e) {
+         const error = e as Error;
+         setError(error.message);
+      } finally {
+         setLoading(false);
+      }
+   };
 
    async function rebalanceComposition(
       provider: ethers.providers.Web3Provider,
       cowApi: OrderBookApi
    ) {
-      // if (!composition) {
-      //    alert("Rebalancing did not run as there is no composition");
-      //    return;
-      // }
+      if (!composition) {
+         alert("Rebalancing did not run as there is no composition");
+         return;
+      }
 
-      // TODO: Remove me and uncomment the above
-      // Create fake composition
-      const composition: Composition = {
-         assets: [
-            "0x8e5bbbb09ed1ebde8674cda39a0c169401db4252",
-            "0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1",
-            "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d",
-         ],
-         allocations: [0, 0, 1],
-      };
-
-    try {
-      console.log("Initiating rebalance");
+      try {
+         console.log("Initiating rebalance");
 
          const signer = provider.getSigner();
          const signerAddress = await signer.getAddress();
@@ -128,27 +117,29 @@ export const CompositionProvider = ({ children }: CompositionProviderProps) => {
       }
    }
 
-  return (
-    <CompositionContext.Provider
-      value={{
-        composition,
-        loading,
-        error,
-        fetchComposition,
-        updateComposition,
-        rebalanceComposition,
-      }}
-    >
-      {children}
-    </CompositionContext.Provider>
-  );
+   return (
+      <CompositionContext.Provider
+         value={{
+            composition,
+            loading,
+            error,
+            fetchComposition,
+            updateComposition,
+            rebalanceComposition,
+         }}
+      >
+         {children}
+      </CompositionContext.Provider>
+   );
 };
 
 // Custom hook to use the context
 export const useComposition = () => {
-  const context = useContext(CompositionContext);
-  if (!context) {
-    throw new Error("useComposition must be used within a CompositionProvider");
-  }
-  return context;
+   const context = useContext(CompositionContext);
+   if (!context) {
+      throw new Error(
+         "useComposition must be used within a CompositionProvider"
+      );
+   }
+   return context;
 };
