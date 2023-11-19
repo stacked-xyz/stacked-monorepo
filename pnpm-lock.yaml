@@ -58,8 +58,6 @@ importers:
         specifier: ^5.2.2
         version: 5.2.2
 
-  packages/contracts: {}
-
   packages/data-access:
     dependencies:
       '@fleekhq/fleek-storage-js':
