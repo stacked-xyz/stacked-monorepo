@@ -2,10 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Composition } from "@/components/ui/composition";
-import { BalanceList } from "@/components/ui/balance-list";
-import { TopUp } from "@/components/top-up";
 import NoAllocation from "@/components/no-allocation";
-import { AfterOnRamp } from "@/components/after-onramp";
 import { useRouter } from "next/navigation";
 
 import { OrderHistory } from "@/components/order-history";
@@ -16,20 +13,16 @@ import { MainNav } from "@/components/ui/main-nav";
 import AuthenticationPage from "./login/page";
 import { useComposition } from "@/store/allocationsContext";
 import { getAllocationObject } from "@/lib/utils";
-import { RebalanceButton } from "@/components/rebalance-button";
-import { useTokenBalances } from "@/hooks/useTokenBalances";
-import { useTokenExchangeRates } from "@/hooks/useTokenExchangeRates";
+import { TotalBalance } from "@/components/total-balance";
 
 export default function Home() {
-  const { isAuthenticated, ready, web3Provider, ownerAddress, cowApi, chain } =
-    useAccountAbstraction();
-  const router = useRouter();
-  const [fetched, setFetched] = React.useState(false);
-  const {
-    composition: compositionFromServer,
-    fetchComposition,
-    rebalanceComposition,
-  } = useComposition();
+   const { isAuthenticated, ready, web3Provider, ownerAddress, cowApi, chain, numChainId } = useAccountAbstraction();
+   const router = useRouter();
+   const [fetched, setFetched] = React.useState(false);
+   const {
+      composition: compositionFromServer,
+      fetchComposition,
+   } = useComposition();
 
   React.useEffect(() => {
     const fetchComp = async () => {
@@ -56,10 +49,6 @@ export default function Home() {
     (value) => (value as number) > 0
   );
 
-  const doRebalance = async () => {
-    await rebalanceComposition(web3Provider, cowApi);
-  };
-
   return (
     <>
       <div className="flex-col md:flex md:px-8">
@@ -84,42 +73,7 @@ export default function Home() {
             </h2>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle>Total Balance</CardTitle>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  className="w-4 h-4 text-muted-foreground"
-                >
-                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col gap-8">
-                  <div>
-                    <div className="text-2xl font-bold">$45,231.89 USD</div>
-                  </div>
-
-                  {/* <BalanceList
-                    balances={[
-                      { symbol: "BTC", asset: "Bitcoin", balance: 4567 },
-                      { symbol: "ETH", asset: "Ethereum", balance: 2400 },
-                    ]}
-                  /> */}
-                  <div className="flex flex-row gap-2">
-                    <TopUp wallet="TODO" />
-                    <RebalanceButton doRebalance={doRebalance} />
-                  </div>
-                  <AfterOnRamp />
-                </div>
-              </CardContent>
-            </Card>
+            <TotalBalance />
             <Card className="col-span-3">
               <CardHeader>
                 <CardTitle>Composition</CardTitle>
