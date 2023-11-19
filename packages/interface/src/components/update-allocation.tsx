@@ -17,6 +17,7 @@ import { Composition } from "@/components/ui/composition";
 import AllocationSlider from "./allocation-slider";
 import { useComposition } from "@/store/allocationsContext";
 import { reverseAllocationObject } from "@/lib/utils";
+import { useAccountAbstraction } from "@/store/accountAbstractionContext";
 
 export type Allocations = {
   [key: string]: number;
@@ -30,7 +31,10 @@ export function UpdateAllocation({
   const [selectedToken, setSelectedToken] = React.useState<string>("");
   const [allocationState, setAllocations] =
     React.useState<Allocations>(allocations);
-  const { composition, updateComposition } = useComposition();
+  const { composition, updateComposition, error } = useComposition();
+  const { ownerAddress } = useAccountAbstraction();
+
+  if (ownerAddress === undefined || ownerAddress === "") return null;
 
   const updateAllocations = (newPercentage: number) => {
     // Update or add the selected token's percentage
@@ -73,6 +77,19 @@ export function UpdateAllocation({
     return newAllocations;
   };
 
+  const saveAllocation = async () => {
+    const stateForDB = reverseAllocationObject(allocationState);
+
+    const result = await updateComposition(ownerAddress, stateForDB, 1);
+
+    console.log({ result });
+  };
+
+  console.log({
+    error,
+    allocationStateForDB: reverseAllocationObject(allocationState),
+  });
+
   if (!allocations) return null;
 
   return (
@@ -101,14 +118,7 @@ export function UpdateAllocation({
           />
         ) : null}
         <DialogFooter>
-          <Button
-            onClick={() => {
-              reverseAllocationObject(allocationState);
-              updateComposition("1", allocationState, 1);
-            }}
-          >
-            Save changes
-          </Button>
+          <Button onClick={saveAllocation}>Save changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

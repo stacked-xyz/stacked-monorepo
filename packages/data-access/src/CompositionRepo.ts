@@ -74,22 +74,25 @@ export class CompositionRepo {
       if (composition.assets.length != composition.allocations.length) {
         throw new Error("Assets and allocations must be the same length");
       }
-      for (let asset in composition.assets) {
+
+      for (let index = 0; index < composition.assets.length; index++) {
+        const asset = composition.assets[index];
+
         if (
           !this.supportedTokens.some(
-            (token) =>
-              token.address.toLowerCase() === asset.toLowerCase() &&
-              token.chainId === chainId
+            (token) => token.symbol.toLowerCase() === asset?.toLowerCase()
+            // token.chainId === chainId
           )
         ) {
           throw new Error("Asset not supported" + asset);
         }
       }
+
       const sum: number = composition.allocations.reduce(
         (sum, value) => sum + value,
         0
       );
-      if (sum != 1) {
+      if (sum != 100) {
         throw new Error("Allocation must sum to 100%");
       }
     } catch (e) {

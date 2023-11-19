@@ -17,14 +17,13 @@ export function getAllocationObject(composition: Composition): Allocations {
 }
 
 export function reverseAllocationObject(allocations: Allocations) {
-  const allocationAPIFormat: { allocations: string[]; composition: number[] } =
-    {
-      allocations: [],
-      composition: [],
-    };
+  const allocationAPIFormat: Composition = {
+    assets: [],
+    allocations: [],
+  };
   for (const symbol in allocations) {
-    allocationAPIFormat.allocations.push(symbol);
-    allocationAPIFormat.composition.push(allocations[symbol]);
+    allocationAPIFormat.assets.push(symbol);
+    allocationAPIFormat.allocations.push(allocations[symbol]);
   }
   return allocationAPIFormat;
 }
