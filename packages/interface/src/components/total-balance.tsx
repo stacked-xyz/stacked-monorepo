@@ -11,24 +11,29 @@ import { UnknownToken, useTokens } from "@/hooks/useTokens";
 import { useAccountAbstraction } from "@/store/accountAbstractionContext";
 
 export function TotalBalance() {
-    const { isAuthenticated, ready, web3Provider, ownerAddress, chain, numChainId } = useAccountAbstraction();
+    const { isAuthenticated, ready, web3Provider, ownerAddress, chain, cowApi, numChainId } = useAccountAbstraction();
     const [fetched, setFetched] = useState(false);
     const {
         rebalanceComposition,
         composition: compositionFromServer,
     } = useComposition();
 
-    const assets = useMemo(() => {
-        return (compositionFromServer?.assets || []).concat([chain.baseAssetAddress])
-    }, [compositionFromServer?.assets, chain.baseAssetAddress])
+    console.log(compositionFromServer);
 
+    const { tokensByAddress, tokensBySymbol } = useTokens(numChainId)
+
+    const assets = useMemo(() => {
+        const tokensFromComposition = (compositionFromServer?.assets || []).map((symbol) => {
+            return (tokensBySymbol.get(symbol) || UnknownToken).address
+        })
+        return Array.from(new Set(tokensFromComposition.concat([chain.baseAssetAddress])))
+    }, [compositionFromServer?.assets, chain.baseAssetAddress])
 
     const { balancesByAddress } = useTokenBalances(
         assets,
         ownerAddress,
         web3Provider
     )
-    console.log(balancesByAddress);
 
     const { normalizedBalancesByAddress } = useNormalizedBalances(
         assets,
@@ -37,12 +42,13 @@ export function TotalBalance() {
         chain.baseAssetAddress,
         ownerAddress!
     )
+
+    console.log(normalizedBalancesByAddress);
+
     const doRebalance = async () => {
         if (!web3Provider) return;
-        await rebalanceComposition(web3Provider);
+        await rebalanceComposition(web3Provider, cowApi!);
     };
-
-    const { tokensByAddress } = useTokens(numChainId)
 
     const baseAsset = useMemo(() => {
         return tokensByAddress.get(chain.baseAssetAddress.toLowerCase()) || UnknownToken
@@ -53,7 +59,7 @@ export function TotalBalance() {
             (acc, asset) => acc.add(normalizedBalancesByAddress.get(asset) || BigNumber.from(0)),
             BigNumber.from(0)
         )
-        return ethers.utils.formatUnits(sumOfBalances, baseAsset.decimals)
+        return parseFloat(ethers.utils.formatUnits(sumOfBalances, baseAsset.decimals)).toFixed(5)
     }, [assets, baseAsset.decimals, normalizedBalancesByAddress])
 
     return (

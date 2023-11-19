@@ -22,6 +22,11 @@ export function useNormalizedBalances(
             const orderBookApi = new OrderBookApi({ chainId });
             let normalizedBalances = new Map<string, BigNumber>();
             for (const asset of assets) {
+                if (asset === referenceAsset) {
+                    normalizedBalances.set(asset, balances.get(asset) || BigNumber.from(0));
+                    continue;
+                }
+
                 const resp = await orderBookApi.getQuote({
                     sellToken: asset,
                     buyToken: referenceAsset,
