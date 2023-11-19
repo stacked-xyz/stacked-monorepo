@@ -45,7 +45,7 @@ export function Composition({ allocations }: { allocations: Allocations }) {
             textAnchor={x > cx ? "start" : "end"}
             dominantBaseline="central"
          >
-            {`${(percent * 100).toFixed(0)}% ${name ?? "N/A/"}`}
+            {`${(percent * 100).toFixed(2)}% ${name ?? "N/A/"}`}
          </text>
       );
    };

@@ -60,8 +60,11 @@ export function Portfolio() {
             }),
             allocations: assets.map((asset) => {
                 const balance = normalizedBalancesByAddress.get(asset) || BigNumber.from(0)
+                console.log(balance.toString())
                 if (totalBalance.isZero()) return 0;
-                return balance.mul(1000000).div(totalBalance).toNumber() / 10000
+                const pct = balance.mul(1000000).div(totalBalance).toNumber() / 10000
+                console.log(pct);
+                return pct;
             })
         }
     }, [assets, normalizedBalancesByAddress, tokensByAddress])
