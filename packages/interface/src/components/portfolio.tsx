@@ -11,82 +11,101 @@ import { getAllocationObject } from "@/lib/utils";
 import { RebalanceButton } from "./rebalance-button";
 
 export function Portfolio() {
-    const { isAuthenticated, ready, web3Provider, ownerAddress, chain, cowApi, numChainId } = useAccountAbstraction();
-    const [fetched, setFetched] = useState(false);
-    const {
-        rebalanceComposition,
-        composition: compositionFromServer,
-    } = useComposition();
+   const {
+      isAuthenticated,
+      ready,
+      web3Provider,
+      ownerAddress,
+      chain,
+      cowApi,
+      numChainId,
+   } = useAccountAbstraction();
+   const [fetched, setFetched] = useState(false);
+   const { rebalanceComposition, composition: compositionFromServer } =
+      useComposition();
 
-    console.log(compositionFromServer);
+   console.log(compositionFromServer);
 
-    const { tokensByAddress, tokensBySymbol } = useTokens(numChainId)
+   const { tokensByAddress, tokensBySymbol } = useTokens(numChainId);
 
-    const baseAsset = useMemo(() => {
-        return tokensByAddress.get(chain.baseAssetAddress.toLowerCase()) || UnknownToken
-    }, [chain.baseAssetAddress, tokensByAddress])
+   const baseAsset = useMemo(() => {
+      return (
+         tokensByAddress.get(chain.baseAssetAddress.toLowerCase()) ||
+         UnknownToken
+      );
+   }, [chain.baseAssetAddress, tokensByAddress]);
 
-    const assets = useMemo(() => {
-        const tokensFromComposition = (compositionFromServer?.assets || []).map((symbol) => {
-            return (tokensBySymbol.get(symbol) || UnknownToken).address
-        })
-        return Array.from(new Set(tokensFromComposition.concat([chain.baseAssetAddress])))
-    }, [compositionFromServer?.assets, chain.baseAssetAddress])
+   const assets = useMemo(() => {
+      const tokensFromComposition = (compositionFromServer?.assets || []).map(
+         (symbol) => {
+            return (tokensBySymbol.get(symbol) || UnknownToken).address;
+         }
+      );
+      return Array.from(
+         new Set(tokensFromComposition.concat([chain.baseAssetAddress]))
+      );
+   }, [compositionFromServer?.assets, chain.baseAssetAddress, tokensBySymbol]);
 
-    const { balancesByAddress } = useTokenBalances(
-        assets,
-        ownerAddress,
-        web3Provider
-    )
+   const { balancesByAddress } = useTokenBalances(
+      assets,
+      ownerAddress,
+      web3Provider
+   );
 
-    const { normalizedBalancesByAddress } = useNormalizedBalances(
-        assets,
-        balancesByAddress,
-        numChainId,
-        chain.baseAssetAddress,
-        ownerAddress!
-    )
+   const { normalizedBalancesByAddress } = useNormalizedBalances(
+      assets,
+      balancesByAddress,
+      numChainId,
+      chain.baseAssetAddress,
+      ownerAddress!
+   );
 
-    const totalBalance = useMemo((): BigNumber => {
-        return assets.reduce(
-            (acc, asset) => acc.add(normalizedBalancesByAddress.get(asset) || BigNumber.from(0)),
-            BigNumber.from(0)
-        )
-    }, [assets, baseAsset.decimals, normalizedBalancesByAddress])
+   const totalBalance = useMemo((): BigNumber => {
+      return assets.reduce(
+         (acc, asset) =>
+            acc.add(
+               normalizedBalancesByAddress.get(asset) || BigNumber.from(0)
+            ),
+         BigNumber.from(0)
+      );
+   }, [assets, normalizedBalancesByAddress]);
 
-    const allocation = useMemo(() => {
-        return {
-            assets: assets.map((asset) => {
-                return tokensByAddress.get(asset.toLocaleLowerCase())?.symbol || "N/A"
-            }),
-            allocations: assets.map((asset) => {
-                const balance = normalizedBalancesByAddress.get(asset) || BigNumber.from(0)
-                console.log(balance.toString())
-                if (totalBalance.isZero()) return 0;
-                const pct = balance.mul(1000000).div(totalBalance).toNumber() / 10000
-                console.log(pct);
-                return pct;
-            })
-        }
-    }, [assets, normalizedBalancesByAddress, tokensByAddress])
+   const allocation = useMemo(() => {
+      return {
+         assets: assets.map((asset) => {
+            return (
+               tokensByAddress.get(asset.toLocaleLowerCase())?.symbol || "N/A"
+            );
+         }),
+         allocations: assets.map((asset) => {
+            const balance =
+               normalizedBalancesByAddress.get(asset) || BigNumber.from(0);
+            console.log(balance.toString());
+            if (totalBalance.isZero()) return 0;
+            const pct =
+               balance.mul(1000000).div(totalBalance).toNumber() / 10000;
+            console.log(pct);
+            return pct;
+         }),
+      };
+   }, [assets, normalizedBalancesByAddress, tokensByAddress, totalBalance]);
 
-    const doRebalance = async () => {
-        if (!web3Provider) return;
-        await rebalanceComposition(tokensBySymbol, web3Provider, cowApi!);
-    };
+   const doRebalance = async () => {
+      if (!web3Provider) return;
+      await rebalanceComposition(tokensBySymbol, web3Provider, cowApi!);
+   };
 
-    return (
-        <Card className="col-span-2">
-        <CardHeader>
+   return (
+      <Card className="col-span-2">
+         <CardHeader>
             <CardTitle>Portfolio</CardTitle>
-        </CardHeader>
-        <CardContent className="relative flex-col items-center justify-center pl-2">
+         </CardHeader>
+         <CardContent className="relative flex-col items-center justify-center pl-2">
             <Composition allocations={getAllocationObject(allocation)} />
             <div className="flex flex-col items-center justify-center">
-                <RebalanceButton doRebalance={doRebalance} />
+               <RebalanceButton doRebalance={doRebalance} />
             </div>
-        </CardContent>
-        </Card>
-    )
-
+         </CardContent>
+      </Card>
+   );
 }

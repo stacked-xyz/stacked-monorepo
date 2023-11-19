@@ -1,7 +1,13 @@
 "use client";
-import React, { createContext, useState, useContext, useCallback, use } from "react";
+import React, {
+   createContext,
+   useState,
+   useContext,
+   useCallback,
+   use,
+} from "react";
 import { CompositionRepo, Composition } from "@stacked-xyz/data-access/src/";
-import { ethers } from "ethers";
+import { Contract, ethers } from "ethers";
 import { sendOrders, TargetAllocation, AssetWeight } from "@stacked-xyz/orders";
 import { OrderBookApi } from "@cowprotocol/cow-sdk";
 import { useAccountAbstraction } from "./accountAbstractionContext";
@@ -103,20 +109,35 @@ export const CompositionProvider = ({ children }: CompositionProviderProps) => {
             })
          );
 
-         const { orders, signatureTxResponse } = await sendOrders(
+         // const ERC20_ABI = [
+         //    "function balanceOf(address owner) view returns (uint256)",
+         //    "function deposit() payable",
+         // ];
+
+         // const tokenContract = new Contract(
+         //    "0xe91d153e0b41518a2ce8dd3d7944fa863463a97d",
+         //    ERC20_ABI,
+         //    signer
+         // );
+         // await tokenContract.deposit({ value: ethers.utils.parseEther("0.1") });
+
+         const sendResponse = await sendOrders(
             provider,
             signer,
             signerAddress,
             cowApi,
             targetAllocation,
-            chain.baseAssetAddress,
+            chain.baseAssetAddress
             // "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d" // TODO: Change the address
          );
 
-         console.log(signatureTxResponse);
-         for (const order of orders) {
-            console.log(order.id);
-         }
+         console.log("sendResponse: ");
+         console.log({ sendResponse });
+
+         // console.log(signatureTxResponse);
+         // for (const order of orders) {
+         //    console.log(order.id);
+         // }
       } catch (error) {
          console.log("Rebalance failed");
          console.log("error: ", error);
