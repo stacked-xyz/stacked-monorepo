@@ -1,5 +1,3 @@
-import Safe from "@safe-global/protocol-kit";
-import { EthersAdapter } from "@safe-global/protocol-kit";
 import * as ethers from "ethers";
 import { OrderBookApi } from "@cowprotocol/cow-sdk";
 
@@ -16,9 +14,9 @@ const RPC_URL = process.env.GNOSIS_RPC_URL!;
 
 // const TX_SERVICE_URL = "https://safe-transaction-goerli.safe.global/";
 export const GOERLI_SETTLEMENT_CONTRACT_ADDRESS =
-  "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
+   "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
 export const GNOSIS_SETTLEMENT_CONTRACT_ADDRESS =
-  "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
+   "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
 export const GOERLI_USDC = "0xD87Ba7A50B2E7E660f678A895E4B72E7CB4CCd9C";
 export const GOERLI_WETH = "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6";
 export const GOERLI_DAI = "0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60";
@@ -34,40 +32,26 @@ const chainId = 100; // 5;
 const orderBookApi = new OrderBookApi({ chainId });
 
 async function main() {
-  const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-  const signer = new ethers.Wallet(SIGNER_PK, provider);
+   const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+   const signer = new ethers.Wallet(SIGNER_PK, provider);
 
-  const ethAdapter = new EthersAdapter({
-    ethers,
-    signerOrProvider: signer,
-  });
+   const { orders, signatureTxResponse } = await sendOrders(
+      provider,
+      signer,
+      SIGNER_ADDRESS,
+      orderBookApi,
+      [
+         { token: GNOSIS_WBTC, weight: 0 },
+         { token: GNOSIS_WETH, weight: 0 },
+         { token: GNOSIS_WXDAI, weight: 1 },
+      ],
+      GNOSIS_WXDAI
+   );
 
-  const safeSdk = await Safe.create({
-    ethAdapter,
-    safeAddress: GNOSIS_SAFE_ADDRESS,
-  });
-  // const safeApiKit = new SafeApiKit({
-  //   txServiceUrl: TX_SERVICE_URL,
-  //   ethAdapter,
-  // });
-
-  const { orders, signatureTxResponse } = await sendOrders(
-    provider,
-    signer,
-    SIGNER_ADDRESS,
-    orderBookApi,
-    [
-      { token: GNOSIS_WBTC, weight: 0 },
-      { token: GNOSIS_WETH, weight: 0 },
-      { token: GNOSIS_WXDAI, weight: 1 },
-    ],
-    GNOSIS_WXDAI
-  );
-
-  console.log(signatureTxResponse);
-  for (const order of orders) {
-    console.log(order.id);
-  }
+   console.log(signatureTxResponse);
+   for (const order of orders) {
+      console.log(order.id);
+   }
 }
 
 main().catch((e: any) => console.error(e));

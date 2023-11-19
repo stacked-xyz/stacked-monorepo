@@ -10,16 +10,7 @@ import {
 } from "@cowprotocol/cow-sdk";
 import { BigNumber, Contract, Signer, providers } from "ethers";
 
-import settlementContractAbi from "./settlementContractAbi.json";
 import erc20Abi from "./erc20Abi.json";
-
-import Safe from "@safe-global/protocol-kit";
-// import SafeApiKit from "@safe-global/api-kit";
-import {
-   OperationType,
-   SafeTransaction,
-} from "@safe-global/safe-core-sdk-types";
-// import { MetaTransactionData } from "@safe-global/safe-core-sdk-types";
 
 export interface AssetWeight {
    token: Address;
