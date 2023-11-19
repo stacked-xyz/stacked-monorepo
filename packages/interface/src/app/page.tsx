@@ -75,9 +75,10 @@ export default function Home() {
          <div className="flex-col md:flex md:px-8">
             <div className="border-b">
                <div className="flex items-center justify-between h-16 px-4">
-                  <span className="px-4 text-2xl font-bold tracking-tight">
-                     Stacked
-                  </span>
+               <span className="px-4 text-2xl font-bold tracking-tight flex items-center">
+                  <img src="/stacked-logo.svg" alt="Stacked logo" className="h-8 mr-2" />
+                  Stacked
+               </span>
                   <MainNav className="mx-6" />
                </div>
             </div>
