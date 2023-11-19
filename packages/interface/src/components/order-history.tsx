@@ -40,7 +40,7 @@ export function OrderHistory() {
             time: formatDate(new Date(order.creationDate)),
             from: `${fromAmount} ${fromToken.symbol}`,
             to: `${toAmount} ${toToken.symbol}`,
-            validTo: formatDate(new Date(order.validTo + 1000)),
+            validTo: formatDate(new Date(order.validTo * 1000)),
             status: order.status
         }
     })
