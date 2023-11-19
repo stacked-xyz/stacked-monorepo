@@ -21,7 +21,7 @@ import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { useTokenExchangeRates } from "@/hooks/useTokenExchangeRates";
 
 export default function Home() {
-   const { isAuthenticated, ready, web3Provider, ownerAddress, chain } = useAccountAbstraction();
+   const { isAuthenticated, ready, web3Provider, ownerAddress, cowApi, chain } = useAccountAbstraction();
    const router = useRouter();
    const [fetched, setFetched] = React.useState(false);
    const {
@@ -48,8 +48,8 @@ export default function Home() {
 
    if (!ready) return null;
 
-   // Maybe not the best way to null check provider but works for now
-   if (!isAuthenticated || !web3Provider) {
+   // Maybe not the best way to null check dependencies but works for now
+   if (!isAuthenticated || !web3Provider || !cowApi) {
       return <AuthenticationPage />;
    }
 
@@ -67,7 +67,7 @@ export default function Home() {
    console.log(hasAllocation)
 
    const doRebalance = async () => {
-      await rebalanceComposition(web3Provider);
+      await rebalanceComposition(web3Provider, cowApi);
    };
 
    return (

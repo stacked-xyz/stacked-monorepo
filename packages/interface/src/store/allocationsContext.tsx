@@ -2,6 +2,8 @@
 import React, { createContext, useState, useContext, useCallback } from "react";
 import { CompositionRepo, Composition } from "@stacked-xyz/data-access/src/";
 import { ethers } from "ethers";
+import { sendOrders, TargetAllocation, AssetWeight } from "@stacked-xyz/orders";
+import { OrderBookApi } from "@cowprotocol/cow-sdk";
 
 // Define the context shape
 interface CompositionContextShape {
@@ -10,7 +12,8 @@ interface CompositionContextShape {
    error: string | null;
    fetchComposition: (userId: string) => Promise<void>;
    rebalanceComposition: (
-      provider: ethers.providers.Web3Provider
+      provider: ethers.providers.Web3Provider,
+      cowApi: OrderBookApi
    ) => Promise<void>;
    updateComposition: (
       userId: string,
@@ -81,16 +84,53 @@ export const CompositionProvider = ({ children }: CompositionProviderProps) => {
       }
    };
 
-   async function rebalanceComposition(signer: ethers.providers.Web3Provider) {
-      if (!composition) {
-         alert("Rebalancing did not run as there is no composition");
-         return;
-      }
+   async function rebalanceComposition(
+      provider: ethers.providers.Web3Provider,
+      cowApi: OrderBookApi
+   ) {
+      // if (!composition) {
+      //    alert("Rebalancing did not run as there is no composition");
+      //    return;
+      // }
+
+      // TODO: Remove me and uncomment the above
+      // Create fake composition
+      const composition: Composition = {
+         assets: [
+            "0x8e5bbbb09ed1ebde8674cda39a0c169401db4252",
+            "0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1",
+            "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d",
+         ],
+         allocations: [0, 0, 1],
+      };
 
       try {
          console.log("Initiating rebalance");
 
-         alert("Rebalancing Baby!");
+         const signer = provider.getSigner();
+         const signerAddress = await signer.getAddress();
+
+         // Create a new target allocation based on the current composition
+         const targetAllocation: TargetAllocation = composition.assets.map(
+            (asset, index) => ({
+               token: asset,
+               weight: composition.allocations[index],
+            })
+         );
+
+         const { orders, signatureTxResponse } = await sendOrders(
+            provider,
+            signer,
+            signerAddress,
+            cowApi,
+            targetAllocation,
+            "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d" // TODO: Change the address
+         );
+
+         console.log(signatureTxResponse);
+         for (const order of orders) {
+            console.log(order.id);
+         }
       } catch (error) {
          console.log("Rebalance failed");
          console.log("error: ", error);
