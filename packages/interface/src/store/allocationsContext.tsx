@@ -1,9 +1,10 @@
 "use client";
-import React, { createContext, useState, useContext, useCallback } from "react";
+import React, { createContext, useState, useContext, useCallback, use } from "react";
 import { CompositionRepo, Composition } from "@stacked-xyz/data-access/src/";
 import { ethers } from "ethers";
 import { sendOrders, TargetAllocation, AssetWeight } from "@stacked-xyz/orders";
 import { OrderBookApi } from "@cowprotocol/cow-sdk";
+import { useAccountAbstraction } from "./accountAbstractionContext";
 
 // Define the context shape
 interface CompositionContextShape {
@@ -32,6 +33,7 @@ interface CompositionProviderProps {
 
 // Provider component
 export const CompositionProvider = ({ children }: CompositionProviderProps) => {
+   const { chain } = useAccountAbstraction();
    const [composition, setComposition] = useState<Composition | null>(null);
    const [loading, setLoading] = useState<boolean>(false);
    const [error, setError] = useState<string | null>(null);
@@ -104,7 +106,8 @@ export const CompositionProvider = ({ children }: CompositionProviderProps) => {
             signerAddress,
             cowApi,
             targetAllocation,
-            "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d" // TODO: Change the address
+            chain.baseAssetAddress,
+            // "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d" // TODO: Change the address
          );
 
          console.log(signatureTxResponse);

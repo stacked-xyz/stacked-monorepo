@@ -27,6 +27,7 @@ const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
 type accountAbstractionContextValue = {
    ownerAddress?: string;
    chainId: string;
+   chain: Chain;
    isAuthenticated: boolean;
    ready: boolean;
    web3Provider?: ethers.providers.Web3Provider;
@@ -43,8 +44,9 @@ const initialState = {
    loginWeb3Auth: () => {},
    logoutWeb3Auth: () => {},
    setChainId: () => {},
-   numChainId: 0,
+   numChainId: BigNumber.from(initialChain.id).toNumber(),
    chainId: initialChain.id,
+   chain: initialChain,
 };
 
 const accountAbstractionContext =
