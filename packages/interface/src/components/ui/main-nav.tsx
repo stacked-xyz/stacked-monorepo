@@ -19,7 +19,14 @@ export function MainNav({
          {...props}
       >
          <div className="flex gap-2 fles-col">
-            <Button variant="outline" type="button">
+            <Button
+               variant="outline"
+               type="button"
+               onClick={() => {
+                  navigator.clipboard.writeText(ownerAddress?.toString() || "");
+                  
+               }}
+            >
                {isAuthenticated
                   ? shortenAddress(ownerAddress || "")
                   : "Connect Wallet"}
