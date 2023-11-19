@@ -15,6 +15,7 @@ import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
 import { Web3AuthModalPack } from "@safe-global/auth-kit";
 import { initialChain } from "../chains/chains";
 import { getChain } from "../utils/getChain";
+import { Chain } from "@/models/chain";
 
 const RPC_URL = "https://eth-goerli.public.blastapi.io";
 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
@@ -29,6 +30,7 @@ type accountAbstractionContextValue = {
    logoutWeb3Auth: () => void;
    setChainId: (chainId: string) => void;
    numChainId: number;
+   chain: Chain;
 };
 
 const initialState = {
@@ -199,7 +201,7 @@ const AccountAbstractionProvider = ({
       logoutWeb3Auth,
       setChainId,
       ready,
-      numChainId: BigNumber.from(chainId).toNumber()
+      numChainId: BigNumber.from(chainId).toNumber(),
    };
 
    return (

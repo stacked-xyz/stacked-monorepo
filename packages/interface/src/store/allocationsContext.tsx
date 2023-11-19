@@ -40,10 +40,22 @@ export const CompositionProvider = ({ children }: CompositionProviderProps) => {
       setLoading(true);
       try {
          const userComposition = await compositionRepo.getComposition(userId);
+         console.log(userComposition);
          setComposition(userComposition);
       } catch (e) {
          const error = e as Error;
          setError(error.message);
+         // TODO Remove:
+         setComposition({
+            assets: [
+               "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d",
+               "0x8e5bbbb09ed1ebde8674cda39a0c169401db4252"
+            ],
+            allocations: [
+               0.5,
+               0.5
+            ]
+         })
       } finally {
          setLoading(false);
       }

@@ -43,7 +43,11 @@ export function useTokens(chainID: number) {
         })
     }, [setTokens, chainID])
 
-    return { tokens, tokensByAddress: tokensByAddress(tokens), tokensBySymbol: tokensBySymbol(tokens) }
+    return {
+      tokens,
+      tokensByAddress: tokensByAddress(tokens),
+      tokensBySymbol: tokensBySymbol(tokens),
+    };
 }
 
 const tokensByAddress = cache(function _tokensMap(tokens: Token[]) {

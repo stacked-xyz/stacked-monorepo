@@ -3,8 +3,13 @@
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
 import { Allocations } from "../update-allocation";
+import { useAccountAbstraction } from "@/store/accountAbstractionContext";
+import { useTokens } from "@/hooks/useTokens";
 
 export function Composition({ allocations }: { allocations: Allocations }) {
+  const { numChainId } = useAccountAbstraction();
+  const { tokensByAddress } = useTokens(numChainId);
+
   const data = Object.keys(allocations).map((key) => {
     return { name: key, value: allocations[key] };
   });
@@ -16,7 +21,7 @@ export function Composition({ allocations }: { allocations: Allocations }) {
     innerRadius,
     outerRadius,
     percent,
-    name,
+    name 
   }: {
     cx: number;
     cy: number;
@@ -30,6 +35,8 @@ export function Composition({ allocations }: { allocations: Allocations }) {
     const x = cx + radius * Math.cos((-midAngle * Math.PI) / 180);
     const y = cy + radius * Math.sin((-midAngle * Math.PI) / 180);
 
+    const token = tokensByAddress.get(name.toLowerCase());
+
     return (
       <text
         x={x}
@@ -38,7 +45,7 @@ export function Composition({ allocations }: { allocations: Allocations }) {
         textAnchor={x > cx ? "start" : "end"}
         dominantBaseline="central"
       >
-        {`${(percent * 100).toFixed(0)}% ${name}`}
+        {`${(percent * 100).toFixed(0)}% ${token?.symbol ?? "N/A/"}`}
       </text>
     );
   };

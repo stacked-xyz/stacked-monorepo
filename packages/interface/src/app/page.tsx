@@ -17,9 +17,11 @@ import AuthenticationPage from "./login/page";
 import { useComposition } from "@/store/allocationsContext";
 import { getAllocationObject } from "@/lib/utils";
 import { RebalanceButton } from "@/components/rebalance-button";
+import { useTokenBalances } from "@/hooks/useTokenBalances";
+import { useTokenExchangeRates } from "@/hooks/useTokenExchangeRates";
 
 export default function Home() {
-   const { isAuthenticated, ready, web3Provider } = useAccountAbstraction();
+   const { isAuthenticated, ready, web3Provider, ownerAddress, chain } = useAccountAbstraction();
    const router = useRouter();
    const [fetched, setFetched] = React.useState(false);
    const {
@@ -30,10 +32,19 @@ export default function Home() {
 
    React.useEffect(() => {
       if (isAuthenticated && !fetched) {
-         fetchComposition("1");
+         fetchComposition(ownerAddress!);
          setFetched(true);
       }
-   }, [isAuthenticated, fetchComposition, fetched]);
+   }, [isAuthenticated, fetchComposition, fetched, ownerAddress]);
+
+   // const { balancesByAddress } = useTokenBalances(
+   //    (compositionFromServer?.assets || []).concat([chain.baseAssetAddress])
+   // )
+
+   // const { rateByAddress } = useTokenExchangeRates(
+   //    compositionFromServer?.assets || [], 
+   //    chain.baseAssetAddress
+   // )
 
    if (!ready) return null;
 
@@ -42,13 +53,18 @@ export default function Home() {
       return <AuthenticationPage />;
    }
 
+   console.log(compositionFromServer);
    const composition = compositionFromServer
       ? getAllocationObject(compositionFromServer)
       : {};
 
+   console.log("Composition:", composition);
+
    const hasAllocation = Object.values(composition).some(
-      (value) => (value as number) > 0
+      (item) => item > 0
    );
+
+   console.log(hasAllocation)
 
    const doRebalance = async () => {
       await rebalanceComposition(web3Provider);

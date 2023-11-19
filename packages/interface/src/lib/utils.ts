@@ -10,7 +10,7 @@ export function cn(...inputs: ClassValue[]) {
 // Map allocations from API into an object
 export function getAllocationObject(composition: Composition): Allocations {
   const cryptoAllocation: Allocations = {};
-  composition.allocations.forEach((symbol, index) => {
+  composition.assets.forEach((symbol, index) => {
     cryptoAllocation[symbol] = composition.allocations[index];
   });
   return cryptoAllocation;

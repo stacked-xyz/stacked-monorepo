@@ -9,6 +9,7 @@ export const gnosisChain: Chain = {
    blockExplorerUrl: "https://gnosisscan.io",
    color: "#3e6957",
    transactionServiceUrl: "https://safe-transaction-gnosis-chain.safe.global",
+   baseAssetAddress: "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d" // wxdai
 };
 
 export const goerliChain: Chain = {
@@ -20,6 +21,7 @@ export const goerliChain: Chain = {
    blockExplorerUrl: "https://goerli.etherscan.io",
    color: "#fbc02d",
    transactionServiceUrl: "https://safe-transaction-goerli.safe.global",
+   baseAssetAddress: "0xD87Ba7A50B2E7E660f678A895E4B72E7CB4CCd9C" // usdc
 };
 
 export const mainnetChain: Chain = {
@@ -31,7 +33,8 @@ export const mainnetChain: Chain = {
    blockExplorerUrl: "https://etherscan.io",
    color: "#DDDDDD",
    transactionServiceUrl: "https://safe-transaction-mainnet.safe.global",
+   baseAssetAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
 };
 
 export const chains: Chain[] = [gnosisChain, goerliChain, mainnetChain];
-export const initialChain = mainnetChain;
+export const initialChain = gnosisChain;
