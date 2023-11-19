@@ -5,6 +5,7 @@ import { Composition } from "./ui/composition";
 import { getAllocationObject } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useAccountAbstraction } from "@/store/accountAbstractionContext";
+import { UpdateAllocation } from "./update-allocation";
 
 export function TargetAllocation() {
   const { isAuthenticated, ready, web3Provider, ownerAddress, cowApi } =
@@ -36,7 +37,7 @@ export function TargetAllocation() {
       <CardHeader>
         <CardTitle>Target Allocation</CardTitle>
       </CardHeader>
-      <CardContent className="relative flex items-center justify-center pl-2">
+      <CardContent className="relative flex-col items-center justify-center pl-2">
         <Composition
           allocations={
             hasAllocation
@@ -47,6 +48,11 @@ export function TargetAllocation() {
                 })
           }
         />
+        {hasAllocation ? (
+          <div className="flex flex-col items-center justify-center">
+            <UpdateAllocation allocations={composition} />
+          </div>
+        ) : null}
         {!hasAllocation ? <NoAllocation allocations={composition} /> : null}
       </CardContent>
     </Card>

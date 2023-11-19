@@ -9,19 +9,33 @@ import { useAccountAbstraction } from "@/store/accountAbstractionContext";
 import { MainNav } from "@/components/ui/main-nav";
 import AuthenticationPage from "./login/page";
 import { useComposition } from "@/store/allocationsContext";
-import { getAllocationObject } from "@/lib/utils";
+
 import { TotalBalance } from "@/components/total-balance";
 import { TargetAllocation } from "@/components/target-allocation";
 import { Portfolio } from "@/components/portfolio";
 
 export default function Home() {
-   const { isAuthenticated, ready, web3Provider, cowApi } = useAccountAbstraction();
+  const { isAuthenticated, ready, web3Provider, ownerAddress, cowApi } =
+    useAccountAbstraction();
+  const [fetched, setFetched] = React.useState(false);
+  const { fetchComposition } = useComposition();
+
+  React.useEffect(() => {
+    const fetchComp = async () => {
+      await fetchComposition(ownerAddress as string);
+      setFetched(true);
+    };
+    if (isAuthenticated && !fetched && ownerAddress) {
+      fetchComp();
+    }
+  }, [isAuthenticated, fetchComposition, fetched, ownerAddress]);
+
   if (!ready) return null;
 
-   // Maybe not the best way to null check dependencies but works for now
-   if (!isAuthenticated || !web3Provider || !cowApi) {
-      return <AuthenticationPage />;
-   }
+  // Maybe not the best way to null check dependencies but works for now
+  if (!isAuthenticated || !web3Provider || !cowApi) {
+    return <AuthenticationPage />;
+  }
 
   return (
     <>
