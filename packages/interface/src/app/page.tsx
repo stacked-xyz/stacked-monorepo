@@ -76,7 +76,7 @@ export default function Home() {
             <TotalBalance />
             <Card className="col-span-3">
               <CardHeader>
-                <CardTitle>Composition</CardTitle>
+                <CardTitle>Target allocation</CardTitle>
               </CardHeader>
               <CardContent className="relative flex items-center justify-center pl-2">
                 <Composition
