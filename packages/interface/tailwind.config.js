@@ -22,7 +22,7 @@ module.exports = {
         sans: ["var(--font-geist-sans)", ...fontFamily.sans],
       },
       colors: {
-        border: "hsl(var(--border))",
+        border: "black",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
