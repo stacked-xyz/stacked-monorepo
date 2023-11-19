@@ -44,18 +44,26 @@ export class CompositionRepo {
 
       let composition: Composition;
 
-      const downloadParams = {
-         apiKey: "DlJ495iN08EqqR4pumMtjA==",
-         apiSecret: "3JjL/0UuKHSKP9jgv4kxNAPdB6V8JbcuyyLC99pUdnA=",
-         key: user,
-      };
-
-      try {
-         let compositionRaw = (await fleekStorage.get(downloadParams)).data;
-         composition = JSON.parse(compositionRaw);
-      } catch (e) {
-         throw new Error(`Error downloading composition: ${e}`);
+      const compositionFromLocalStorage = localStorage.getItem(user);
+      if (compositionFromLocalStorage) {
+         console.log("Got composition from local storage");
+         composition = JSON.parse(compositionFromLocalStorage);
+      } else {
+         throw new Error(`Error downloading composition from local storage`);
       }
+
+      // const downloadParams = {
+      //    apiKey: "DlJ495iN08EqqR4pumMtjA==",
+      //    apiSecret: "3JjL/0UuKHSKP9jgv4kxNAPdB6V8JbcuyyLC99pUdnA=",
+      //    key: user,
+      // };
+
+      // try {
+      //    let compositionRaw = (await fleekStorage.get(downloadParams)).data;
+      //    composition = JSON.parse(compositionRaw);
+      // } catch (e) {
+      //    throw new Error(`Error downloading composition: ${e}`);
+      // }
 
       return composition;
    }
@@ -114,22 +122,37 @@ export class CompositionRepo {
          throw new Error("User public key must be provided");
       }
 
-      let uploadResult;
+      // Add compisitoin to local storage
+      localStorage.setItem(user, JSON.stringify(composition));
 
-      const uploadParams = {
-         apiKey: "DlJ495iN08EqqR4pumMtjA==",
-         apiSecret: "3JjL/0UuKHSKP9jgv4kxNAPdB6V8JbcuyyLC99pUdnA=",
-         key: user,
-         data: JSON.stringify(composition),
-      };
-
-      try {
-         uploadResult = await fleekStorage.upload(uploadParams);
-         console.log(`Uploaded composition for user(${user})`, uploadResult);
-      } catch (e) {
-         throw new Error(`Error uploading composition for user(${user}): ${e}`);
+      // check if item is in local storage
+      const composiotionFromLocalStorage = localStorage.getItem(user);
+      if (composiotionFromLocalStorage) {
+         console.log("Got composition from local storage");
+         console.log({ composiotionFromLocalStorage });
+         return true;
+      } else {
+         return false;
       }
 
-      return true;
+      // return true;
+
+      // let uploadResult;
+      //
+      // const uploadParams = {
+      //    apiKey: "DlJ495iN08EqqR4pumMtjA==",
+      //    apiSecret: "3JjL/0UuKHSKP9jgv4kxNAPdB6V8JbcuyyLC99pUdnA=",
+      //    key: user,
+      //    data: JSON.stringify(composition),
+      // };
+
+      // try {
+      //    uploadResult = await fleekStorage.upload(uploadParams);
+      //    console.log(`Uploaded composition for user(${user})`, uploadResult);
+      // } catch (e) {
+      //    throw new Error(`Error uploading composition for user(${user}): ${e}`);
+      // }
+
+      // return true;
    }
 }
