@@ -72,7 +72,7 @@ export function Portfolio() {
 
     const doRebalance = async () => {
         if (!web3Provider) return;
-        await rebalanceComposition(web3Provider, cowApi!);
+        await rebalanceComposition(tokensBySymbol, web3Provider, cowApi!);
     };
 
     return (

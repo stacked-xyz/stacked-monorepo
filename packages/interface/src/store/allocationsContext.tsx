@@ -5,6 +5,7 @@ import { ethers } from "ethers";
 import { sendOrders, TargetAllocation, AssetWeight } from "@stacked-xyz/orders";
 import { OrderBookApi } from "@cowprotocol/cow-sdk";
 import { useAccountAbstraction } from "./accountAbstractionContext";
+import { Token } from "@/hooks/useTokens";
 
 // Define the context shape
 interface CompositionContextShape {
@@ -13,6 +14,7 @@ interface CompositionContextShape {
    error: string | null;
    fetchComposition: (userId: string) => Promise<void>;
    rebalanceComposition: (
+      tokenBySymbol: Map<string, Token>,
       provider: ethers.providers.Web3Provider,
       cowApi: OrderBookApi
    ) => Promise<void>;
@@ -78,6 +80,7 @@ export const CompositionProvider = ({ children }: CompositionProviderProps) => {
    };
 
    async function rebalanceComposition(
+      tokensBySymbol: Map<string, Token>,
       provider: ethers.providers.Web3Provider,
       cowApi: OrderBookApi
    ) {
@@ -95,8 +98,8 @@ export const CompositionProvider = ({ children }: CompositionProviderProps) => {
          // Create a new target allocation based on the current composition
          const targetAllocation: TargetAllocation = composition.assets.map(
             (asset, index) => ({
-               token: asset,
-               weight: composition.allocations[index],
+               token: tokensBySymbol.get(asset)?.address!,
+               weight: composition.allocations[index] / 100,
             })
          );
 
