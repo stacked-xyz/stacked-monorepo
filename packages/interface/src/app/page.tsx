@@ -78,7 +78,10 @@ export default function Home() {
         </div>
         <div className="flex-1 p-8 pt-6 space-y-4">
           <div className="flex items-center justify-between space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+            <h2 className="text-3xl font-bold tracking-tight">
+              Topup your balance. Choose assets and allocations. See how your
+              protfolio grows.
+            </h2>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <Card>
@@ -101,9 +104,6 @@ export default function Home() {
                 <div className="flex flex-col gap-8">
                   <div>
                     <div className="text-2xl font-bold">$45,231.89 USD</div>
-                    <p className="text-xs text-muted-foreground">
-                      $45,231.89 USD
-                    </p>
                   </div>
 
                   {/* <BalanceList
