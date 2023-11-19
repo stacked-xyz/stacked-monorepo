@@ -8,6 +8,7 @@ import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { useNormalizedBalances } from "@/hooks/useNormalizedBalances";
 import { BigNumber } from "ethers";
 import { getAllocationObject } from "@/lib/utils";
+import { RebalanceButton } from "./rebalance-button";
 
 export function Portfolio() {
     const { isAuthenticated, ready, web3Provider, ownerAddress, chain, cowApi, numChainId } = useAccountAbstraction();
@@ -69,13 +70,21 @@ export function Portfolio() {
         }
     }, [assets, normalizedBalancesByAddress, tokensByAddress])
 
+    const doRebalance = async () => {
+        if (!web3Provider) return;
+        await rebalanceComposition(web3Provider, cowApi!);
+    };
+
     return (
         <Card className="col-span-2">
         <CardHeader>
             <CardTitle>Portfolio</CardTitle>
         </CardHeader>
-        <CardContent className="relative flex items-center justify-center pl-2">
+        <CardContent className="relative flex-col items-center justify-center pl-2">
             <Composition allocations={getAllocationObject(allocation)} />
+            <div className="flex flex-col items-center justify-center">
+                <RebalanceButton doRebalance={doRebalance} />
+            </div>
         </CardContent>
         </Card>
     )

@@ -45,11 +45,6 @@ export function TotalBalance() {
 
     console.log(normalizedBalancesByAddress);
 
-    const doRebalance = async () => {
-        if (!web3Provider) return;
-        await rebalanceComposition(web3Provider, cowApi!);
-    };
-
     const baseAsset = useMemo(() => {
         return tokensByAddress.get(chain.baseAssetAddress.toLowerCase()) || UnknownToken
     }, [chain.baseAssetAddress, tokensByAddress])
@@ -95,7 +90,6 @@ export function TotalBalance() {
                   /> */}
                     <div className="flex flex-row gap-2">
                         <TopUp wallet="TODO" />
-                        <RebalanceButton doRebalance={doRebalance} />
                     </div>
                     <AfterOnRamp />
                 </div>
