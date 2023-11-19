@@ -1,4 +1,4 @@
-import fleekStorage from "@fleekhq/fleek-storage-js";
+// import fleekStorage from "@fleekhq/fleek-storage-js";
 import { Composition, token } from "./types";
 import "dotenv/config";
 
