@@ -105,8 +105,8 @@ const AccountAbstractionProvider = ({
          const options: Web3AuthOptions = {
             clientId:
                process.env.REACT_APP_WEB3AUTH_CLIENT_ID ||
-               "BNgmLOYGOV5Zw0VsoCKlZ6i1ylOqMuCBvkxlTAISsyBX6-9YvHhFmu228dSeigr0XZEx9xFVNwf0AsR7B_ed4LI",
-            web3AuthNetwork: "testnet",
+               "BCwRP9eiQif8A-cBbzOkdYfHIFktAK7nYQSWWGhd-B7bQISoLqYacVkqr_1UESchTdlfKSgvyxShYoH_ztXA3DE",
+            web3AuthNetwork: "mainnet",
             chainConfig: {
                chainNamespace: CHAIN_NAMESPACES.EIP155,
                chainId: chain.id,
