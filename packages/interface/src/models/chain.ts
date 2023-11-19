@@ -9,4 +9,5 @@ export type Chain = {
    blockExplorerUrl: string;
    transactionServiceUrl?: string;
    faucetUrl?: string;
+   baseAssetAddress: string;
 };

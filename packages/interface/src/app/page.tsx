@@ -17,11 +17,13 @@ import AuthenticationPage from "./login/page";
 import { useComposition } from "@/store/allocationsContext";
 import { getAllocationObject } from "@/lib/utils";
 import { RebalanceButton } from "@/components/rebalance-button";
+import { useTokenBalances } from "@/hooks/useTokenBalances";
+import { useTokenExchangeRates } from "@/hooks/useTokenExchangeRates";
 
 export default function Home() {
-  const { isAuthenticated, ready, web3Provider, ownerAddress } =
+  const { isAuthenticated, ready, web3Provider, ownerAddress, cowApi, chain } =
     useAccountAbstraction();
-
+  const router = useRouter();
   const [fetched, setFetched] = React.useState(false);
   const {
     composition: compositionFromServer,
@@ -41,8 +43,8 @@ export default function Home() {
 
   if (!ready) return null;
 
-  // Maybe not the best way to null check provider but works for now
-  if (!isAuthenticated || !web3Provider) {
+  // Maybe not the best way to null check dependencies but works for now
+  if (!isAuthenticated || !web3Provider || !cowApi) {
     return <AuthenticationPage />;
   }
 
@@ -55,7 +57,7 @@ export default function Home() {
   );
 
   const doRebalance = async () => {
-    await rebalanceComposition(web3Provider);
+    await rebalanceComposition(web3Provider, cowApi);
   };
 
   return (
@@ -63,7 +65,12 @@ export default function Home() {
       <div className="flex-col md:flex md:px-8">
         <div className="border-b">
           <div className="flex items-center justify-between h-16 px-4">
-            <span className="px-4 text-2xl font-bold tracking-tight">
+            <span className="px-4 text-2xl font-bold tracking-tight flex items-center">
+              <img
+                src="/stacked-logo.svg"
+                alt="Stacked logo"
+                className="h-8 mr-2"
+              />
               Stacked
             </span>
             <MainNav className="mx-6" />

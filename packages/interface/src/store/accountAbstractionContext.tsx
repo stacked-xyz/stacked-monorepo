@@ -15,6 +15,11 @@ import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
 import { Web3AuthModalPack } from "@safe-global/auth-kit";
 import { initialChain } from "../chains/chains";
 import { getChain } from "../utils/getChain";
+import { Chain } from "@/models/chain";
+import {
+   OrderBookApi,
+   SupportedChainId as CowChains,
+} from "@cowprotocol/cow-sdk";
 
 const RPC_URL = "https://eth-goerli.public.blastapi.io";
 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
@@ -29,6 +34,7 @@ type accountAbstractionContextValue = {
    logoutWeb3Auth: () => void;
    setChainId: (chainId: string) => void;
    numChainId: number;
+   cowApi?: OrderBookApi;
 };
 
 const initialState = {
@@ -37,6 +43,7 @@ const initialState = {
    loginWeb3Auth: () => {},
    logoutWeb3Auth: () => {},
    setChainId: () => {},
+   numChainId: 0,
    chainId: initialChain.id,
 };
 
@@ -73,6 +80,8 @@ const AccountAbstractionProvider = ({
    // web3 provider to perform signatures
    const [web3Provider, setWeb3Provider] =
       useState<ethers.providers.Web3Provider>();
+
+   const [cowApi, setCowApi] = useState<OrderBookApi>();
 
    const isAuthenticated = !!ownerAddress && !!chainId;
    const chain = getChain(chainId) || initialChain;
@@ -144,6 +153,7 @@ const AccountAbstractionProvider = ({
          });
 
          setWeb3AuthModalPack(web3AuthModalPack);
+         // Set cow api
       })();
    }, [chain]);
 
@@ -158,10 +168,23 @@ const AccountAbstractionProvider = ({
          const provider =
             web3AuthModalPack.getProvider() as ethers.providers.ExternalProvider;
 
+         const chainIdNumber = chain.id ? Number(chain.id) : 0;
+
          // we set react state with the provided values: owner (eoa address), chain, safes owned & web3 provider
          setChainId(chain.id);
          setOwnerAddress(eoa);
          setWeb3Provider(new ethers.providers.Web3Provider(provider));
+
+         if (
+            chainIdNumber == 0 ||
+            !Object.values(CowChains).includes(chainIdNumber)
+         ) {
+            throw new Error(`Unsupported chain ID was used: ${chainIdNumber}`);
+         }
+
+         console.log(`Current chain ID: ${chainIdNumber}`);
+
+         setCowApi(new OrderBookApi({ chainId: chainIdNumber }));
       } catch (error) {
          console.log("error: ", error);
       }
@@ -170,17 +193,17 @@ const AccountAbstractionProvider = ({
    // This effect will try to see if the user is logged in already
    useEffect(() => {
       if (web3AuthModalPack) {
-        if (web3AuthModalPack.getProvider()) {
-          (async () => {
-              console.log("Before loginWeb3Auth")
-              await loginWeb3Auth();
-              setReady(true);
-          })();
-        } else {
-          setReady(true);
-        }  
-      } 
-    }, [web3AuthModalPack, loginWeb3Auth]);
+         if (web3AuthModalPack.getProvider()) {
+            (async () => {
+               console.log("Before loginWeb3Auth");
+               await loginWeb3Auth();
+               setReady(true);
+            })();
+         } else {
+            setReady(true);
+         }
+      }
+   }, [web3AuthModalPack, loginWeb3Auth]);
 
    const logoutWeb3Auth = () => {
       web3AuthModalPack?.signOut();
@@ -198,8 +221,9 @@ const AccountAbstractionProvider = ({
       loginWeb3Auth,
       logoutWeb3Auth,
       setChainId,
+      cowApi,
       ready,
-      numChainId: BigNumber.from(chainId).toNumber()
+      numChainId: BigNumber.from(chainId).toNumber(),
    };
 
    return (

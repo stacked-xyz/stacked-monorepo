@@ -123,6 +123,9 @@ importers:
       '@stacked-xyz/data-access':
         specifier: 0.0.1
         version: link:../data-access
+      '@stacked-xyz/orders':
+        specifier: workspace:^
+        version: link:../orders
       '@web3auth/base':
         specifier: 4.6.0
         version: 4.6.0(@babel/runtime@7.23.2)
