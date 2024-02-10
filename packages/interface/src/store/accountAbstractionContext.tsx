@@ -127,7 +127,7 @@ const AccountAbstractionProvider = ({
             [WALLET_ADAPTERS.METAMASK]: {
                label: "metamask",
                showOnDesktop: true,
-               showOnMobile: false,
+               showOnMobile: true,
             },
          };
 

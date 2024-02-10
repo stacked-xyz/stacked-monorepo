@@ -1,5 +1,5 @@
 import { Allocations } from "@/components/update-allocation";
-import { Composition } from "@stacked-xyz/data-access/src";
+import { Composition } from "@stacked-xyz/data-access/dist";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 

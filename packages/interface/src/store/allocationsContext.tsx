@@ -6,7 +6,7 @@ import React, {
    useCallback,
    use,
 } from "react";
-import { CompositionRepo, Composition } from "@stacked-xyz/data-access/src/";
+import { CompositionRepo, Composition } from "@stacked-xyz/data-access/dist/";
 import { Contract, ethers } from "ethers";
 import { sendOrders, TargetAllocation, AssetWeight } from "@stacked-xyz/orders";
 import { OrderBookApi } from "@cowprotocol/cow-sdk";
